@@ -3,47 +3,49 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Instagram, Twitch, Twitter } from "lucide-react";
+import { Twitch, Twitter, Disc, Music2, Video } from "lucide-react";
 
 const HomePage = () => {
   return (
-    <div className="text-white min-h-screen flex flex-col relative">
-      {/* Full Page GIF Background */}
+    <div className="text-[#FFFBED] min-h-screen flex flex-col relative">
+      
+       {/* Full Page GIF Background */}
       <div
-  className="fixed inset-0 bg-contain bg-center bg-no-repeat opacity-70 z-0"
-  style={{
-    backgroundImage: `url('https://i.ibb.co/XrDRLV7S/acloseupof-subject-1-smokingacigarettewiththesmokemoving-ezgif-com-gif-maker.gif')`,
-    backgroundColor: "#000" // optional: fills empty space
-  }}
-></div>
+        className="fixed inset-0 bg-contain bg-center bg-no-repeat opacity-44 z-0"
+        style={{
+          backgroundImage: `url('https://i.ibb.co/2YNrPKrD/3dgifmaker96052.gif)`,
+          backgroundColor: "#000"
+        }}
+      ></div>
 
       
       {/* Gradient Overlay for better readability */}
-      <div className="fixed inset-0 bg-gradient-to-b from-[#040704]/80 via-[#040704]/90 to-[#040704] z-0"></div>
+      <div className="fixed inset-0 bg-gradient-to-b from-black/80 via-black/90 to-black z-0"></div>
 
-      {/* Content */}
       <div className="relative z-10">
         <Navbar />
 
-        {/* HERO SECTION */}
-        <section className="relative flex flex-col items-center justify-center text-center py-28 px-6 overflow-hidden">
+        {/* HERO */}
+        <section className="relative flex flex-col items-center justify-center text-center py-28 px-6">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-6xl md:text-8xl font-extrabold text-[#EFA813] drop-shadow-[0_0_20px_rgba(239,168,19,0.3)] tracking-widest"
+            className="text-6xl md:text-8xl font-extrabold tracking-widest drop-shadow-[0_0_25px_rgba(241,168,47,0.4)]"
+            style={{ color: "#F1A82F" }}
           >
-            TACOPOJU
+            LUCKYW
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="mt-5 text-xl md:text-2xl text-gray-300 max-w-2xl"
+            className="mt-5 text-xl md:text-2xl text-[#ffffff] max-w-2xl"
           >
-            Wager under code <span className="text-[#EFA813]">'tacopoju'</span> for
-            prizes, rewards, and leaderboard glory.
+            Wager under code{" "}
+            <span className="text-[#F1A82F]">'luckyw'</span> to join the{" "}
+            <span className="text-[#ffffff]">$750 BI-WEEKLY LEADERBOARD</span>.
           </motion.p>
 
           <motion.div
@@ -53,20 +55,23 @@ const HomePage = () => {
             className="flex flex-wrap justify-center gap-5 mt-10"
           >
             <Button
-  className="bg-[#547E25] hover:bg-[#EFA813] hover:text-[#040704] text-white px-8 py-4 rounded-2xl text-lg font-semibold shadow-lg hover:shadow-[#EFA813]/40 transition-all"
-  onClick={() => window.open("https://roobet.com/?ref=tacopoju", "_blank")}
->
-  Join Leaderboard
-</Button>
+              className="bg-[#F1A82F] hover:bg-[#F9B97C] text-[#0F0F0F] px-8 py-4 rounded-2xl text-lg font-semibold shadow-lg transition-all"
+              onClick={() =>
+                window.open("https://roobet.com/?ref=luckyw", "_blank")
+              }
+            >
+              Join Leaderboard
+            </Button>
 
-<Button
-  variant="outline"
-  className="border-2 border-[#EFA813] text-[#EFA813] hover:bg-[#EFA813] hover:text-[#040704] px-8 py-4 rounded-2xl text-lg font-semibold transition-all"
-  onClick={() => window.open("https://discord.gg/GTZK29pBAZ", "_blank")}
->
-  Claim Bonus
-</Button>
-
+            <Button
+              variant="outline"
+              className="border-2 border-[#F1A82F] text-[#F1A82F] hover:bg-[#F1A82F] hover:text-[#0F0F0F] px-8 py-4 rounded-2xl text-lg font-semibold transition-all"
+              onClick={() =>
+                window.open("https://discord.com/invite/pEHw9xyerw", "_blank")
+              }
+            >
+              Join Discord
+            </Button>
           </motion.div>
         </section>
 
@@ -74,16 +79,16 @@ const HomePage = () => {
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-8 px-8 py-20 text-center">
           {[
             {
-              title: "Leaderboard",
-              desc: "Compete weekly and climb to the top of the ranks.",
+              title: "Bi-Weekly Leaderboard",
+              desc: "$750 prize pool every cycle.",
             },
             {
               title: "Exclusive Rewards",
-              desc: "Earn unique bonuses, prizes, and special giveaways.",
+              desc: "Bonuses, giveaways & special perks.",
             },
             {
-              title: "Join the Team",
-              desc: "Become part of the ever-growing TACOPOJU community.",
+              title: "Join LuckyW Community",
+              desc: "Be part of the fastest growing squad.",
             },
           ].map((card, i) => (
             <motion.div
@@ -91,97 +96,114 @@ const HomePage = () => {
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: i * 0.2 }}
-              className="rounded-2xl bg-gradient-to-b from-[#0F140E]/70 to-[#040704]/50 border border-[#547E25]/30 backdrop-blur-md p-8 shadow-md hover:shadow-[#EFA813]/20 hover:-translate-y-1.5 transition-all"
+              className="rounded-2xl bg-[#4E2F1A]/60 border border-[#F1A82F]/30 backdrop-blur-md p-8 shadow-md hover:shadow-[#F1A82F]/30 hover:-translate-y-1.5 transition-all"
             >
-              <h3 className="text-2xl font-bold text-[#EFA813] mb-3">
+              <h3 className="text-2xl font-bold text-[#F1A82F] mb-3">
                 {card.title}
               </h3>
-              <p className="text-gray-400 leading-relaxed">{card.desc}</p>
+              <p className="text-[#FFFBED]/70 leading-relaxed">{card.desc}</p>
             </motion.div>
           ))}
         </section>
-
-        {/* SOCIAL SECTION */}
-        <section className="py-20 px-6 text-center">
-          <h2 className="text-3xl font-bold text-[#EFA813] mb-10">
-            Connect with Me 🌐
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {[
-              {
-                href: "https://www.instagram.com/tacopoju/",
-                title: "Instagram",
-                icon: <Instagram className="w-6 h-6" />,
-                img: "https://i.ibb.co/rRJGQTY8/Screenshot-2025-10-29-045108-removebg-preview.png",
-                desc: "Catch my latest stories, clips, and updates.",
-              },
-              {
-                href: "https://kick.com/tacopoju",
-                title: "Kick",
-                icon: <Twitch className="w-6 h-6" />,
-                img: "https://i.ibb.co/gb3JxCZq/Screenshot-2025-10-29-044933-removebg-preview.png",
-                desc: "Watch my live streams and chat with the community.",
-              },
-              {
-                href: "https://x.com/TACOPOJU",
-                title: "X (Twitter)",
-                icon: <Twitter className="w-6 h-6" />,
-                img: "https://i.ibb.co/p6bxjD0j/Twitter-X-Icon-PNG-removebg-preview.png",
-                desc: "Stay updated with quick thoughts and stream news.",
-              },
-            ].map((social, i) => (
-              <motion.a
-                key={i}
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                whileHover={{ scale: 1.05 }}
-                className="flex flex-col items-center rounded-2xl bg-gradient-to-b from-[#0F140E]/70 to-[#040704]/50 border border-[#547E25]/30 overflow-hidden shadow-md hover:shadow-[#EFA813]/20 transition-all"
-              >
-                <div className="w-full h-36 bg-[#0F140E] flex items-center justify-center">
-                  <img
-                    src={social.img}
-                    alt={social.title}
-                    className="h-16 object-contain opacity-80 hover:opacity-100 transition-all"
-                  />
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <span className="text-[#EFA813] font-semibold text-lg">
-                      {social.title}
-                    </span>
-                    {social.icon}
-                  </div>
-                  <p className="text-gray-400 text-sm">{social.desc}</p>
-                </div>
-              </motion.a>
-            ))}
-          </div>
-        </section>
-
-        {/* STREAM SECTION */}
+{/* STREAM */}
         <section className="py-20 px-8 text-center">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-4xl font-bold text-[#EFA813] mb-10"
+            className="text-4xl font-bold text-[#F1A82F] mb-10"
           >
-            Watch My Streams 🎮
+            Live Stream 🎮
           </motion.h2>
+
           <div className="flex justify-center">
             <motion.iframe
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
-              src="https://player.kick.com/tacopoju"
+              src="https://player.kick.com/luckyw"
               frameBorder="0"
               allowFullScreen
-              className="w-full max-w-5xl h-[420px] rounded-3xl border border-[#547E25]/40 shadow-[0_0_25px_rgba(84,126,37,0.2)] hover:shadow-[#EFA813]/30 transition-all"
+              className="w-full max-w-5xl h-[420px] rounded-3xl border border-[#F1A82F]/40 shadow-[0_0_25px_rgba(241,168,47,0.3)] transition-all"
             ></motion.iframe>
           </div>
         </section>
 
+{/* Social Section - Futuristic Neon Design */}
+<section className="py-28 px-6 text-center bg-gradient-to-b from-black via-[#0d0d0d] to-black">
+  <h2 className="text-5xl font-extrabold text-[#F1A82F] mb-20 tracking-wide drop-shadow-[0_0_30px_rgba(241,168,47,0.7)]">
+    Connect with LuckyW 🌐
+  </h2>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 max-w-7xl mx-auto">
+    {[
+      {
+        href: "https://kick.com/luckyw",
+        title: "Kick",
+        icon: "https://cdn.simpleicons.org/kick/FFFFFF",
+        colorFrom: "#53FC18",
+        colorTo: "#0FF000",
+      },
+      {
+        href: "https://x.com/luckyy_w",
+        title: "Twitter",
+        icon: "https://cdn.simpleicons.org/x/FFFFFF",
+        colorFrom: "#1DA1F2",
+        colorTo: "#0ABCF2",
+      },
+      {
+        href: "https://discord.com/invite/pEHw9xyerw",
+        title: "Discord",
+        icon: "https://cdn.simpleicons.org/discord/FFFFFF",
+        colorFrom: "#5865F2",
+        colorTo: "#7289DA",
+      },
+      {
+        href: "https://www.tiktok.com/@kickluckyw",
+        title: "TikTok",
+        icon: "https://cdn.simpleicons.org/tiktok/FFFFFF",
+        colorFrom: "#FE2C55",
+        colorTo: "#FF6B81",
+      },
+    ].map((social, i) => (
+      <motion.a
+        key={i}
+        href={social.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        whileHover={{ scale: 1.05, rotate: 2 }}
+        className="group relative rounded-3xl overflow-hidden border border-[#F1A82F]/30 transition-all duration-300"
+      >
+        {/* Neon Gradient Pulse */}
+        <div
+          className="absolute inset-0 opacity-25 blur-3xl group-hover:opacity-50 group-hover:blur-2xl transition-all duration-500"
+          style={{
+            background: `radial-gradient(circle at 50% 50%, ${social.colorFrom}, ${social.colorTo})`,
+          }}
+        ></div>
+
+        {/* Foreground Content */}
+        <div className="relative z-10 flex flex-col items-center p-12 bg-black/40 backdrop-blur-xl rounded-3xl">
+          <img
+            src={social.icon}
+            alt={social.title}
+            className="h-24 mb-6 opacity-90 group-hover:opacity-100 transition-all duration-300 drop-shadow-[0_0_25px_rgba(255,255,255,0.6)]"
+          />
+          <span className="text-[#F1A82F] text-2xl font-bold tracking-wide drop-shadow-[0_0_15px_rgba(241,168,47,0.7)]">
+            {social.title}
+          </span>
+        </div>
+
+        {/* Animated Neon Border */}
+        <div className="absolute inset-0 border-2 rounded-3xl border-transparent group-hover:border-gradient-to-r group-hover:from-[#F1A82F] group-hover:via-[#FF5C00] group-hover:to-[#53FC18] animate-pulse"></div>
+      </motion.a>
+    ))}
+  </div>
+</section>
+
+
+
+        
         <Footer />
       </div>
     </div>

@@ -1,7 +1,8 @@
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
-import { FaKickstarterK } from "react-icons/fa"; // Kick icon approximation
-import { FaInstagram, FaDiscord, FaXTwitter } from "react-icons/fa6"; // Socials
+import { FaKickstarterK } from "react-icons/fa"; // Kick icon
+import { FaDiscord, FaXTwitter, FaTiktok } from "react-icons/fa6"; // Socials
+import { FaInstagram } from "react-icons/fa";
 
 export function Footer() {
 	const currentYear = new Date().getFullYear();
@@ -28,7 +29,8 @@ export function Footer() {
 							{[
 								{ to: "/", label: "Home" },
 								{ to: "/bonuses", label: "Bonuses" },
-								{ to: "/RoobetPage", label: "Leaderboards" },
+								{ to: "/leaderboards", label: "Leaderboards" },
+								{ to: "/contact", label: "Contact" },
 							].map(({ to, label }) => (
 								<Link
 									key={label}
@@ -47,25 +49,30 @@ export function Footer() {
 						<div className='flex gap-3'>
 							{[
 								{
-									href: "https://discord.gg/GTZK29pBAZ",
-									icon: <FaDiscord className='w-5 h-5' />,
-									label: "Discord"
-								},
-								{
-									href: "https://www.instagram.com/tacopoju/",
-									icon: <FaInstagram className='w-5 h-5' />,
-									label: "Instagram"
-								},
-								{
-									href: "https://kick.com/tacopoju",
+									href: "https://kick.com/luckyw",
 									icon: <FaKickstarterK className='w-5 h-5' />,
 									label: "Kick"
 								},
 								{
-									href: "https://x.com/TACOPOJU",
+									href: "https://x.com/luckyy_w",
 									icon: <FaXTwitter className='w-5 h-5' />,
 									label: "Twitter"
 								},
+								{
+									href: "https://discord.com/invite/pEHw9xyerw",
+									icon: <FaDiscord className='w-5 h-5' />,
+									label: "Discord"
+								},
+								{
+									href: "https://www.tiktok.com/@kickluckyw",
+									icon: <FaTiktok className='w-5 h-5' />,
+									label: "TikTok"
+								},
+								// {
+								// 	href: "https://www.instagram.com/luckyw_official/",
+								// 	icon: <FaInstagram className='w-5 h-5' />,
+								// 	label: "Instagram"
+								// },
 							].map(({ href, icon, label }, i) => (
 								<a
 									key={i}
@@ -85,7 +92,7 @@ export function Footer() {
 				{/* Bottom Bar */}
 				<div className='pt-6 mt-12 border-t border-[#547E25]/30 text-center text-sm text-[#fffcf5]/70'>
 					<p className='flex flex-wrap items-center justify-center gap-1'>
-						© {currentYear} TACOPOJU.Site. All rights reserved. Made with
+						© {currentYear} LuckyW.Site. All rights reserved. Made with
 						<Heart className='w-3 h-3 mx-1 text-[#EFA813]' />
 						by{" "}
 						<a
