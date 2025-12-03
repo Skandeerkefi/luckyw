@@ -125,7 +125,10 @@ const RoobetPage: React.FC = () => {
               <Info className="w-4 h-4" /> How It Works
             </Button>
           </div>
-
+{/* Prize Info */}
+<p className="text-[#F1A82F]/80 mb-2 text-sm">
+  🏆 Prize Breakdown: ($500 MIN. WAGER REQ TO BE ELIGIBLE FOR A PRIZE)
+</p>
           {/* Leaderboard */}
           {loading && <p className="text-[#F1A82F]">Loading leaderboard...</p>}
           {error && <p className="text-[#F9B97C]">{error}</p>}
