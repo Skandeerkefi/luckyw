@@ -20,23 +20,25 @@ interface RoobetStore {
   leaderboard: LeaderboardData | null;
   loading: boolean;
   error: string | null;
-  fetchLeaderboard: (startDate?: string, endDate?: string) => Promise<void>;
+  fetchLeaderboard: () => Promise<void>;
 }
 
+// Prevent spamming API
 let lastFetchTime = 0;
 const FETCH_COOLDOWN = 60 * 1000; // 1 minute
 
-// Helper: Always create ISO dates in **pure UTC** (no timezone shift)
-function toISODateUTC(year: number, month: number, day: number) {
-  return new Date(Date.UTC(year, month, day)).toISOString().split("T")[0];
-}
+// Current biweekly period (hardcoded for now)
+const CURRENT_BIWEEKLY = {
+  start: "2025-11-24",
+  end: "2025-12-08",
+};
 
 export const useRoobetStore = create<RoobetStore>((set) => ({
   leaderboard: null,
   loading: false,
   error: null,
 
-  fetchLeaderboard: async (startDate?: string, endDate?: string) => {
+  fetchLeaderboard: async () => {
     const now = Date.now();
     if (now - lastFetchTime < FETCH_COOLDOWN) return;
     lastFetchTime = now;
@@ -44,19 +46,7 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
     set({ loading: true, error: null });
 
     try {
-      // Always calculate month range using UTC
-      const today = new Date();
-      const year = today.getUTCFullYear();
-      const month = today.getUTCMonth();
-
-      const firstDay = toISODateUTC(year, month, 1);       // YYYY-MM-01
-      const lastDay = toISODateUTC(year, month + 1, 0);    // last day of month
-
-      const start = startDate || firstDay;
-      const end = endDate || lastDay;
-
-      const url = `https://tacodata-production.up.railway.app/api/leaderboard/${start}/${end}`;
-
+      const url = `https://tacodata-production.up.railway.app/api/leaderboard/${CURRENT_BIWEEKLY.start}/${CURRENT_BIWEEKLY.end}`;
       const response = await axios.get(url, { timeout: 8000 });
 
       if (!response.data || !response.data.data) {
@@ -80,15 +70,15 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
     } catch (err: any) {
       let message = "Failed to fetch leaderboard";
 
-      if (err.response?.status === 429) {
-        message = "Too many requests — please wait a minute.";
-      } else if (err.response?.status === 500) {
-        message = "Server error — try again later.";
-      } else if (err.code === "ECONNABORTED") {
-        message = "Request timed out — server slow.";
-      }
+      if (err.response?.status === 429) message = "Too many requests — please wait a minute.";
+      else if (err.response?.status === 500) message = "Server error — try again later.";
+      else if (err.code === "ECONNABORTED") message = "Request timed out — server slow.";
 
       set({ error: message, loading: false });
     }
   },
 }));
+
+export function getCurrentBiweekly() {
+  return CURRENT_BIWEEKLY;
+}
