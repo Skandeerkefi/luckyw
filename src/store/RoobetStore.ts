@@ -30,7 +30,7 @@ const FETCH_COOLDOWN = 60 * 1000; // 1 minute
 // Current biweekly period (hardcoded for now)
 const CURRENT_BIWEEKLY = {
   start: "2025-11-24",
-  end: "2025-12-07",
+  end: "2025-12-08",
 };
 
 export const useRoobetStore = create<RoobetStore>((set) => ({
