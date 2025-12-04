@@ -46,7 +46,7 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
     set({ loading: true, error: null });
 
     try {
-      const url = `https://tacodata-production.up.railway.app/api/leaderboard/${CURRENT_BIWEEKLY.start}/${CURRENT_BIWEEKLY.end}`;
+      const url = `https://luckywdata-production.up.railway.app/api/leaderboard/${CURRENT_BIWEEKLY.start}/${CURRENT_BIWEEKLY.end}`;
       const response = await axios.get(url, { timeout: 8000 });
 
       if (!response.data || !response.data.data) {
