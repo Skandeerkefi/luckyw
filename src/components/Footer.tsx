@@ -28,9 +28,9 @@ export function Footer() {
 						<div className='grid grid-cols-1 gap-2'>
 							{[
 								{ to: "/", label: "Home" },
-								{ to: "/bonuses", label: "Bonuses" },
-								{ to: "/leaderboards", label: "Leaderboards" },
-								{ to: "/contact", label: "Contact" },
+								{ to: "/leaderboard", label: "Bonuses" },
+								{ to: "/leaderboard", label: "Leaderboard" },
+								
 							].map(({ to, label }) => (
 								<Link
 									key={label}
