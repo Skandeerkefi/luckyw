@@ -95,7 +95,7 @@ const HomePage = () => {
           statsMain: "100",
           statsSub: "FREE SPINS",
           extraInfo: ["Minimum $1000 weekly wager", "Available every Sunday"],
-          button: { text: "Claim Free Spins", link: "https://roobet.com/?ref=luckyw" }
+          button: { text: "Claim Free Spins", link: "https://discord.com/invite/pEHw9xyerw" }
         },
         {
           title: "Bi-Weekly Leaderboard",
