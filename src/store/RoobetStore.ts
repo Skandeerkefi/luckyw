@@ -23,16 +23,42 @@ interface RoobetStore {
   fetchLeaderboard: () => Promise<void>;
 }
 
-// Prevent spamming API
+// ───────────────────────────────
+// AUTO BIWEEKLY PERIOD GENERATOR
+// ───────────────────────────────
+function getBiweeklyPeriod() {
+  const MS_IN_DAY = 24 * 60 * 60 * 1000;
+
+  // Your fixed reference biweekly start date
+  const referenceStart = new Date("2025-11-24T00:00:00Z");
+  const now = new Date();
+
+  const diffDays = Math.floor((now.getTime() - referenceStart.getTime()) / MS_IN_DAY);
+
+  // How many complete 14-day cycles passed since reference date
+  const periodsPassed = Math.floor(diffDays / 14);
+
+  // Current cycle start = reference + (periodsPassed * 14 days)
+  const currentStart = new Date(referenceStart.getTime() + periodsPassed * 14 * MS_IN_DAY);
+
+  // End = start + 14 days
+  const currentEnd = new Date(currentStart.getTime() + 14 * MS_IN_DAY);
+
+  const format = (d: Date) => d.toISOString().split("T")[0];
+
+  return {
+    start: format(currentStart),
+    end: format(currentEnd),
+  };
+}
+
+// Cooldown (to prevent hammering your backend)
 let lastFetchTime = 0;
 const FETCH_COOLDOWN = 60 * 1000; // 1 minute
 
-// Current biweekly period (hardcoded for now)
-const CURRENT_BIWEEKLY = {
-  start: "2025-11-24",
-  end: "2025-12-08",
-};
-
+// ───────────────────────────────
+// ZUSTAND STORE
+// ───────────────────────────────
 export const useRoobetStore = create<RoobetStore>((set) => ({
   leaderboard: null,
   loading: false,
@@ -46,7 +72,10 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
     set({ loading: true, error: null });
 
     try {
-      const url = `https://luckywdata-production.up.railway.app/api/leaderboard/${CURRENT_BIWEEKLY.start}/${CURRENT_BIWEEKLY.end}`;
+      const period = getBiweeklyPeriod();
+
+      const url = `https://luckywdata-production.up.railway.app/api/leaderboard/${period.start}/${period.end}`;
+
       const response = await axios.get(url, { timeout: 8000 });
 
       if (!response.data || !response.data.data) {
@@ -79,6 +108,7 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
   },
 }));
 
+// Optional export so you can show period on the UI
 export function getCurrentBiweekly() {
-  return CURRENT_BIWEEKLY;
+  return getBiweeklyPeriod();
 }
