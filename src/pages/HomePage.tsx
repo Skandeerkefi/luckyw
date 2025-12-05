@@ -4,6 +4,8 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { Twitch, Twitter, Disc, Music2, Video } from "lucide-react";
+import { CurrentLeaderboard } from "./urrentLeaderboard";
+import { PreviousLeaderboard } from "./PreviousLeaderboard";
 
 const HomePage = () => {
   return (
@@ -200,39 +202,41 @@ const HomePage = () => {
   </div>
 </section>
 
-
-
-{/* STREAM */}
-        <section className="py-20 px-8 text-center">
-          <motion.h2
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="text-4xl font-bold text-[#F1A82F] mb-10"
-          >
-            Live Stream 🎮
-          </motion.h2>
-
-          <div className="flex justify-center">
-            <motion.iframe
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              src="https://player.kick.com/luckyw"
-              frameBorder="0"
-              allowFullScreen
-              className="w-full max-w-5xl h-[420px] rounded-3xl border border-[#F1A82F]/40 shadow-[0_0_25px_rgba(241,168,47,0.3)] transition-all"
-            ></motion.iframe>
-          </div>
-        </section>
-
-{/* Social Section - Futuristic Neon Design */}
-<section className="py-28 px-6 text-center bg-gradient-to-b from-black via-[#0d0d0d] to-black">
-  <h2 className="text-5xl font-extrabold text-[#F1A82F] mb-20 tracking-wide drop-shadow-[0_0_30px_rgba(241,168,47,0.7)]">
-    Connect with LuckyW 🌐
+{/* RULES SECTION */}
+<section className="py-24 px-6 text-center bg-black/40 backdrop-blur-xl border-t border-[#F1A82F]/20">
+  <h2 className="text-5xl font-extrabold text-[#F1A82F] mb-12 tracking-wide">
+    Leaderboard Rules 📜
   </h2>
 
-  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-12 max-w-7xl mx-auto">
+  <div className="max-w-3xl mx-auto text-white/80 text-lg space-y-6 leading-relaxed">
+    <p>
+      Weighted wagers based on RTP determine your leaderboard score.
+    </p>
+
+    <div className="bg-black/60 p-8 rounded-2xl border border-[#F1A82F]/30 shadow-lg space-y-4">
+      <p className="text-2xl font-bold text-white">
+        🎯 RTP ≤ 97% → <span className="text-[#F1A82F]">100% weight</span>
+      </p>
+      <p className="text-2xl font-bold text-white">
+        🎯 RTP ≥ 97% → <span className="text-[#F1A82F]">50% weight</span>
+      </p>
+      <p className="text-2xl font-bold text-white">
+        🎯 RTP ≥ 98% → <span className="text-[#F1A82F]">10% weight</span>
+      </p>
+    </div>
+
+    <p className="text-white/60 mt-6">
+      These weights prevent leaderboard abuse and ensure fair competition.
+    </p>
+  </div>
+</section>
+{/* SOCIALS SECTION */}
+<section className="py-16 px-6 text-center bg-gradient-to-b from-black via-[#0d0d0d] to-black">
+  <h2 className="text-4xl md:text-5xl font-extrabold text-[#F1A82F] mb-12 tracking-wide">
+    Socials 🌐
+  </h2>
+
+  <div className="flex justify-center gap-8 flex-wrap">
     {[
       {
         href: "https://kick.com/luckyw",
@@ -275,35 +279,69 @@ const HomePage = () => {
         href={social.href}
         target="_blank"
         rel="noopener noreferrer"
-        whileHover={{ scale: 1.05, rotate: 2 }}
-        className="group relative rounded-3xl overflow-hidden border border-[#F1A82F]/30 transition-all duration-300"
+        whileHover={{ scale: 1.2 }}
+        className="relative rounded-full p-2 transition-transform duration-300"
       >
-        {/* Neon Gradient Pulse */}
         <div
-          className="absolute inset-0 opacity-25 blur-3xl group-hover:opacity-50 group-hover:blur-2xl transition-all duration-500"
+          className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-lg"
           style={{
             background: `radial-gradient(circle at 50% 50%, ${social.colorFrom}, ${social.colorTo})`,
           }}
-        ></div>
-
-        {/* Foreground Content */}
-        <div className="relative z-10 flex flex-col items-center p-12 bg-black/40 backdrop-blur-xl rounded-3xl">
+        >
           <img
             src={social.icon}
             alt={social.title}
-            className="h-24 mb-6 opacity-90 group-hover:opacity-100 transition-all duration-300 drop-shadow-[0_0_25px_rgba(255,255,255,0.6)]"
+            className="w-8 h-8 md:w-10 md:h-10"
           />
-          <span className="text-[#F1A82F] text-2xl font-bold tracking-wide drop-shadow-[0_0_15px_rgba(241,168,47,0.7)]">
-            {social.title}
-          </span>
         </div>
-
-        {/* Animated Neon Border */}
-        <div className="absolute inset-0 border-2 rounded-3xl border-transparent group-hover:border-gradient-to-r group-hover:from-[#F1A82F] group-hover:via-[#FF5C00] group-hover:to-[#53FC18] animate-pulse"></div>
       </motion.a>
     ))}
   </div>
 </section>
+
+{/* CURRENT LEADERBOARD */}
+<section className="py-24 px-6 bg-black/50 backdrop-blur-xl">
+  <h2 className="text-5xl text-center font-extrabold text-[#F1A82F] mb-14">
+    Current Leaderboard 🏆
+  </h2>
+
+  <CurrentLeaderboard />
+</section>
+{/* PREVIOUS LEADERBOARD */}
+<section className="py-24 px-6 bg-black/60 backdrop-blur-xl border-t border-[#F1A82F]/20">
+  <h2 className="text-5xl text-center font-extrabold text-[#F1A82F] mb-14">
+    Previous Leaderboard 🕒
+  </h2>
+
+  <PreviousLeaderboard />
+</section>
+
+
+{/* STREAM */}
+        <section className="py-20 px-8 text-center">
+          <motion.h2
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-4xl font-bold text-[#F1A82F] mb-10"
+          >
+            Live Stream 🎮
+          </motion.h2>
+
+          <div className="flex justify-center">
+            <motion.iframe
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              src="https://player.kick.com/luckyw"
+              frameBorder="0"
+              allowFullScreen
+              className="w-full max-w-5xl h-[420px] rounded-3xl border border-[#F1A82F]/40 shadow-[0_0_25px_rgba(241,168,47,0.3)] transition-all"
+            ></motion.iframe>
+          </div>
+        </section>
+
+
 
 
 

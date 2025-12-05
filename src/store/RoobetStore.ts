@@ -4,7 +4,6 @@ import axios from "axios";
 interface Player {
   uid: string;
   username: string;
-  wagered: number;
   weightedWagered: number;
   favoriteGameId: string;
   favoriteGameTitle: string;
@@ -29,19 +28,15 @@ interface RoobetStore {
 function getBiweeklyPeriod() {
   const MS_IN_DAY = 24 * 60 * 60 * 1000;
 
-  // Your fixed reference biweekly start date
+  // Reference bi-weekly cycle
   const referenceStart = new Date("2025-11-24T00:00:00Z");
   const now = new Date();
 
   const diffDays = Math.floor((now.getTime() - referenceStart.getTime()) / MS_IN_DAY);
 
-  // How many complete 14-day cycles passed since reference date
   const periodsPassed = Math.floor(diffDays / 14);
 
-  // Current cycle start = reference + (periodsPassed * 14 days)
   const currentStart = new Date(referenceStart.getTime() + periodsPassed * 14 * MS_IN_DAY);
-
-  // End = start + 14 days
   const currentEnd = new Date(currentStart.getTime() + 14 * MS_IN_DAY);
 
   const format = (d: Date) => d.toISOString().split("T")[0];
@@ -52,7 +47,7 @@ function getBiweeklyPeriod() {
   };
 }
 
-// Cooldown (to prevent hammering your backend)
+// Cooldown (avoid spam hitting API)
 let lastFetchTime = 0;
 const FETCH_COOLDOWN = 60 * 1000; // 1 minute
 
@@ -87,8 +82,7 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
         data: response.data.data.map((player: any, index: number) => ({
           uid: player.uid,
           username: player.username,
-          wagered: player.wagered,
-          weightedWagered: player.weightedWagered,
+          weightedWagered: player.weightedWagered, // ONLY THIS
           favoriteGameId: player.favoriteGameId,
           favoriteGameTitle: player.favoriteGameTitle,
           rankLevel: index + 1,
@@ -108,7 +102,7 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
   },
 }));
 
-// Optional export so you can show period on the UI
+// To show bi-weekly range in UI if needed
 export function getCurrentBiweekly() {
   return getBiweeklyPeriod();
 }

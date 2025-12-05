@@ -137,42 +137,56 @@ const RoobetPage: React.FC = () => {
             <div className="overflow-x-auto mb-12">
               <table className="w-full table-auto border-collapse bg-[#0F0F0F]/80 backdrop-blur-md rounded-2xl shadow-lg">
                 <thead className="bg-[#F1A82F] text-[#0F0F0F] uppercase text-sm md:text-base">
-                  <tr>
-                    <th className="p-4 text-center w-[10%]">Rank</th>
-                    <th className="p-4 text-left w-[30%]">Player</th>
-                    <th className="p-4 text-right w-[20%]">Wagered</th>
-                    <th className="p-4 text-right w-[20%]">Weighted</th>
-                    <th className="p-4 text-right w-[20%]">Prize</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topTenPlayers.map((p) => {
-                    const r = p.rankLevel;
-                    const rankColor =
-                      r === 1
-                        ? "bg-yellow-400 text-black"
-                        : r === 2
-                        ? "bg-gray-400 text-black"
-                        : r === 3
-                        ? "bg-yellow-700 text-white"
-                        : "bg-[#F1A82F]/20 text-[#F1A82F]";
+  <tr>
+    <th className="p-4 text-center w-[10%] whitespace-nowrap">Rank</th>
+    <th className="p-4 text-center w-[40%] whitespace-nowrap">Player</th>
+    <th className="p-4 text-right w-[25%] whitespace-nowrap">Wagered</th>
+    <th className="p-4 text-right w-[25%] whitespace-nowrap">Prize</th>
+  </tr>
+</thead>
 
-                    return (
-                      <tr
-                        key={p.uid}
-                        className="border-t border-[#F9B97C]/20 hover:bg-[#F9B97C]/10 transition-all duration-200"
-                      >
-                        <td className="p-4 text-center font-bold">
-                          <span className={`px-3 py-1 rounded-full font-semibold ${rankColor}`}>#{r}</span>
-                        </td>
-                        <td className="p-4 font-semibold break-all">{p.username}</td>
-                        <td className="p-4 text-right">${p.wagered.toLocaleString()}</td>
-                        <td className="p-4 text-right text-[#F1A82F]/80">{p.weightedWagered.toLocaleString()}</td>
-                        <td className="p-4 text-right font-semibold text-[#f9b97c]">{prizeByRank[r] || "$0"}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
+<tbody>
+  {topTenPlayers.map((p) => {
+    const r = p.rankLevel;
+
+    const rankColor =
+      r === 1
+        ? "bg-yellow-400 text-black"
+        : r === 2
+        ? "bg-gray-400 text-black"
+        : r === 3
+        ? "bg-yellow-700 text-white"
+        : "bg-[#F1A82F]/20 text-[#F1A82F]";
+
+    return (
+      <tr
+        key={p.uid}
+        className="border-t border-[#F9B97C]/20 hover:bg-[#F9B97C]/10 transition-all duration-200"
+      >
+        <td className="p-4 text-center font-bold">
+          <span
+            className={`inline-flex justify-center items-center w-10 h-10 rounded-full font-semibold ${rankColor}`}
+          >
+            #{r}
+          </span>
+        </td>
+
+        <td className="p-4 font-semibold text-center truncate max-w-[200px]">
+          {p.username}
+        </td>
+
+        <td className="p-4 text-right text-[#F1A82F]/80">
+          {p.weightedWagered.toLocaleString()}
+        </td>
+
+        <td className="p-4 text-right font-semibold text-[#f9b97c]">
+          {prizeByRank[r] || "$0"}
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+
               </table>
             </div>
           ) : (
