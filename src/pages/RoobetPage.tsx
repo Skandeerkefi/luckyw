@@ -176,7 +176,7 @@ const RoobetPage: React.FC = () => {
         </td>
 
         <td className="p-4 text-right text-[#F1A82F]/80">
-          {Number(p.weightedWagered.toFixed(2)).toLocaleString()}$
+          {p.weightedWagered.toFixed(2)}
 
         </td>
 
