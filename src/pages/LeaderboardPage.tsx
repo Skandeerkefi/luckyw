@@ -246,7 +246,8 @@ const LeaderboardPage: React.FC = () => {
                                                 Weighted Wagered
                                             </div>
                                             <div className='text-xl font-semibold text-[#efae0e]'>
-                                                {player.weightedWagered.toLocaleString()}$
+                                                {Number(player.weightedWagered.toFixed(2)).toLocaleString()}$
+
                                             </div>
                                         </div>
 
