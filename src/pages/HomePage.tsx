@@ -96,7 +96,7 @@ const HomePage = () => {
           description: "Weekly free spins every Sunday",
           statsMain: "100",
           statsSub: "FREE SPINS",
-          extraInfo: ["Minimum $1000 weekly wager", "Available every Sunday"],
+          extraInfo: ["Minimum 1000$ weekly wager", "Available every Sundays"],
           button: { text: "Claim Free Spins", link: "https://discord.com/invite/pEHw9xyerw" }
         },
         {
