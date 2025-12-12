@@ -100,10 +100,10 @@ const HomePage = () => {
           button: { text: "Claim Free Spins", link: "https://discord.com/invite/pEHw9xyerw" }
         },
         {
-          title: "Bi-Weekly Leaderboard",
+          title: "Monthly Leaderboard",
           icon: "🏆",
           description: "Compete against the community every 2 weeks",
-          statsMain: "$750",
+          statsMain: "$1250",
           statsSub: "Total Prize Pool",
           extraInfo: ["$500 MIN. WAGER REQ TO BE ELIGIBLE FOR A PRIZE "],
           badge: "POPULAR",
