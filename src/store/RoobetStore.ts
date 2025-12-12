@@ -19,90 +19,101 @@ interface RoobetStore {
   leaderboard: LeaderboardData | null;
   loading: boolean;
   error: string | null;
-  fetchLeaderboard: () => Promise<void>;
+  fetchLeaderboard: (type?: "monthly" | "biweekly") => Promise<void>;
 }
 
-// ───────────────────────────────
-// AUTO BIWEEKLY PERIOD GENERATOR
-// ───────────────────────────────
-function getBiweeklyPeriod() {
-  const MS_IN_DAY = 24 * 60 * 60 * 1000;
-
-  // Reference bi-weekly cycle
-  const referenceStart = new Date("2025-11-24T00:00:00Z");
+/* ────────────────────────────────────────────────
+   MONTHLY PERIOD  (fixed: Dec 8 → Jan 8)
+   ──────────────────────────────────────────────── */
+export function getCurrentMonthlyPeriod() {
   const now = new Date();
+  const year = now.getUTCFullYear();
 
-  const diffDays = Math.floor((now.getTime() - referenceStart.getTime()) / MS_IN_DAY);
-
-  const periodsPassed = Math.floor(diffDays / 14);
-
-  const currentStart = new Date(referenceStart.getTime() + periodsPassed * 14 * MS_IN_DAY);
-  const currentEnd = new Date(currentStart.getTime() + 14 * MS_IN_DAY);
+  const start = new Date(`${year}-12-08T00:00:00Z`);
+  const end = new Date(`${year + 1}-01-08T00:00:00Z`);
 
   const format = (d: Date) => d.toISOString().split("T")[0];
 
-  return {
-    start: format(currentStart),
-    end: format(currentEnd),
-  };
+  return { start: format(start), end: format(end) };
 }
 
-// Cooldown (avoid spam hitting API)
-let lastFetchTime = 0;
-const FETCH_COOLDOWN = 60 * 1000; // 1 minute
+/* ────────────────────────────────────────────────
+   BIWEEKLY PERIOD (rotating every 14 days starting Dec 8)
+   ──────────────────────────────────────────────── */
+export function getCurrentBiweekly() {
+  const startBase = new Date("2024-12-08T00:00:00Z"); // Fixed start
 
-// ───────────────────────────────
-// ZUSTAND STORE
-// ───────────────────────────────
+  const now = new Date();
+
+  // Days passed since base period
+  const diffDays = Math.floor((now.getTime() - startBase.getTime()) / (1000 * 60 * 60 * 24));
+
+  // Determine which 14-day block we're in
+  const periodIndex = Math.floor(diffDays / 14);
+
+  const start = new Date(startBase);
+  start.setDate(start.getDate() + periodIndex * 14);
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 13);
+
+  const format = (d: Date) => d.toISOString().split("T")[0];
+  return { start: format(start), end: format(end) };
+}
+
+/* ────────────────────────────────────────────────
+   API COOLDOWN
+   ──────────────────────────────────────────────── */
+let lastFetch = 0;
+const COOLDOWN = 60 * 1000;
+
+/* ────────────────────────────────────────────────
+   ZUSTAND STORE
+   ──────────────────────────────────────────────── */
 export const useRoobetStore = create<RoobetStore>((set) => ({
   leaderboard: null,
   loading: false,
   error: null,
 
-  fetchLeaderboard: async () => {
+  fetchLeaderboard: async (type = "biweekly") => {
     const now = Date.now();
-    if (now - lastFetchTime < FETCH_COOLDOWN) return;
-    lastFetchTime = now;
+    if (now - lastFetch < COOLDOWN) return;
+    lastFetch = now;
 
     set({ loading: true, error: null });
 
     try {
-      const period = getBiweeklyPeriod();
+      // Select period type
+      const period =
+        type === "monthly" ? getCurrentMonthlyPeriod() : getCurrentBiweekly();
 
       const url = `https://luckywdata-production.up.railway.app/api/leaderboard/${period.start}/${period.end}`;
 
       const response = await axios.get(url, { timeout: 8000 });
 
-      if (!response.data || !response.data.data) {
-        throw new Error("Invalid API response format");
-      }
+      if (!response.data || !response.data.data)
+        throw new Error("Invalid API response");
 
-      const updatedData: LeaderboardData = {
+      const updated: LeaderboardData = {
         disclosure: response.data.disclosure,
-        data: response.data.data.map((player: any, index: number) => ({
-          uid: player.uid,
-          username: player.username,
-          weightedWagered: player.weightedWagered, // ONLY THIS
-          favoriteGameId: player.favoriteGameId,
-          favoriteGameTitle: player.favoriteGameTitle,
-          rankLevel: index + 1,
+        data: response.data.data.map((p: any, i: number) => ({
+          uid: p.uid,
+          username: p.username,
+          weightedWagered: p.weightedWagered,
+          favoriteGameId: p.favoriteGameId,
+          favoriteGameTitle: p.favoriteGameTitle,
+          rankLevel: i + 1,
         })),
       };
 
-      set({ leaderboard: updatedData, loading: false });
+      set({ leaderboard: updated, loading: false });
     } catch (err: any) {
-      let message = "Failed to fetch leaderboard";
+      let msg = "Failed to fetch leaderboard";
+      if (err.response?.status === 429) msg = "Too many requests — wait a bit.";
+      if (err.response?.status === 500) msg = "Server error — try again later.";
+      if (err.code === "ECONNABORTED") msg = "Request timed out.";
 
-      if (err.response?.status === 429) message = "Too many requests — please wait a minute.";
-      else if (err.response?.status === 500) message = "Server error — try again later.";
-      else if (err.code === "ECONNABORTED") message = "Request timed out — server slow.";
-
-      set({ error: message, loading: false });
+      set({ error: msg, loading: false });
     }
   },
 }));
-
-// To show bi-weekly range in UI if needed
-export function getCurrentBiweekly() {
-  return getBiweeklyPeriod();
-}
