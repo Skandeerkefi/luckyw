@@ -86,39 +86,52 @@ const HomePage = () => {
     </motion.div>
 
     {/* Cards Grid */}
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
       
       {/* CARD TEMPLATE */}
       {[
-        {
-          title: "Sunday Spins",
-          icon: "🎰",
-          description: "Weekly free spins every Sunday",
-          statsMain: "100",
-          statsSub: "FREE SPINS",
-          extraInfo: ["Minimum 1000$ weekly wager", "Available every Sundays"],
-          button: { text: "Claim Free Spins", link: "https://discord.com/invite/pEHw9xyerw" }
-        },
-        {
-          title: "Monthly Leaderboard",
-          icon: "🏆",
-          description: "Compete against the community every 2 weeks",
-          statsMain: "$1250",
-          statsSub: "Total Prize Pool",
-          extraInfo: ["$500 MIN. WAGER REQ TO BE ELIGIBLE FOR A PRIZE "],
-          badge: "POPULAR",
-          button: { text: "Join Leaderboard", link: "https://roobet.com/?ref=luckyw" }
-        },
-        {
-          title: "Affiliate Revenue",
-          icon: "💰",
-          description: "",
-          statsMain: "100%",
-          statsSub: "",
-          extraInfo: ["Instant Payouts • Bi-Weekly"],
-          button: { text: "Start Earning", link: "https://discord.com/invite/pEHw9xyerw" }
-        }
-      ].map((offer, idx) => (
+  {
+    title: "Sunday Spins",
+    icon: "🎰",
+    description: "Weekly free spins every Sunday",
+    statsMain: "100",
+    statsSub: "FREE SPINS",
+    extraInfo: ["Minimum $1000 weekly wager", "Available every Sunday"],
+    button: { text: "Claim Free Spins", link: "https://discord.com/invite/pEHw9xyerw" }
+  },
+  {
+    title: "Monthly Leaderboard",
+    icon: "🏆",
+    description: "Compete against the community every 2 weeks",
+    statsMain: "$1250",
+    statsSub: "Total Prize Pool",
+    extraInfo: ["$500 MIN. WAGER REQUIRED TO BE ELIGIBLE"],
+    badge: "POPULAR",
+    button: { text: "Join Leaderboard", link: "https://roobet.com/?ref=luckyw" }
+  },
+  {
+    title: "Affiliate Revenue",
+    icon: "💰",
+    description: "",
+    statsMain: "100%",
+    statsSub: "",
+    extraInfo: ["Instant Payouts • Bi-Weekly"],
+    button: { text: "Start Earning", link: "https://discord.com/invite/pEHw9xyerw" }
+  },
+  {
+    title: "New Sign-Up Bonus",
+    icon: "🎁",
+    description: "Exclusive bonus for new players",
+    statsMain: "$50",
+    statsSub: "BONUS",
+    extraInfo: [
+      "Wager $500 before the current leaderboard ends",
+      "Use Roobet code: luckyw"
+    ],
+    badge: "NEW",
+    button: { text: "Claim Bonus", link: "https://roobet.com/?ref=luckyw" }
+  }
+].map((offer, idx) => (
         <motion.div
           key={idx}
           initial={{ opacity: 0, y: 40, scale: 0.95 }}
