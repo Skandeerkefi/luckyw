@@ -57,7 +57,7 @@ const RoobetPage: React.FC = () => {
      Fetch leaderboard (safe)
      ─────────────────────────────── */
   useEffect(() => {
-    fetchLeaderboard();
+    fetchLeaderboard("monthly");
   }, [fetchLeaderboard]);
 
   /* ───────────────────────────────
