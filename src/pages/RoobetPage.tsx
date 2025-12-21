@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRoobetStore, getCurrentMonthlyPeriod } from "../store/RoobetStore";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -12,9 +12,9 @@ import {
 } from "@/components/ui/dialog";
 import { Info } from "lucide-react";
 
-// ───────────────────────────────
-// MONTHLY PRIZE MAPPING ($1250 TOTAL)
-// ───────────────────────────────
+/* ───────────────────────────────
+   MONTHLY PRIZE MAPPING ($1250)
+   ─────────────────────────────── */
 const prizeByRank: Record<number, string> = {
   1: "$500",
   2: "$300",
@@ -28,35 +28,49 @@ const prizeByRank: Record<number, string> = {
   10: "$25",
 };
 
-// ───────────────────────────────
-// Format Monthly Range (12/8 → 1/8)
-// ───────────────────────────────
+/* ───────────────────────────────
+   Monthly Label (12/8 → 1/8)
+   ─────────────────────────────── */
 function formatMonthlyRange() {
   const { start, end } = getCurrentMonthlyPeriod();
-  const startDate = new Date(start);
-  const endDate = new Date(end);
 
-  const startStr = `${startDate.getUTCMonth() + 1}/${startDate.getUTCDate()}`;
-  const endStr = `${endDate.getUTCMonth() + 1}/${endDate.getUTCDate()}`;
+  const s = new Date(start);
+  const e = new Date(end);
 
-  return `${startStr}-${endStr} Monthly Edition 🏆`;
+  return `${s.getUTCMonth() + 1}/${s.getUTCDate()}-${e.getUTCMonth() + 1}/${e.getUTCDate()} Monthly Edition 🏆`;
 }
 
 const RoobetPage: React.FC = () => {
   const { leaderboard, loading, error, fetchLeaderboard } = useRoobetStore();
-  const [showHowItWorks, setShowHowItWorks] = useState(false);
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  const [monthlyLabel, setMonthlyLabel] = useState(formatMonthlyRange());
 
-  // ───────────────────────────────
-  // Countdown to end of monthly cycle
-  // ───────────────────────────────
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+
+  const monthlyLabel = useMemo(formatMonthlyRange, []);
+
+  /* ───────────────────────────────
+     Fetch leaderboard (safe)
+     ─────────────────────────────── */
   useEffect(() => {
-    const updateTimer = () => {
+    fetchLeaderboard();
+  }, [fetchLeaderboard]);
+
+  /* ───────────────────────────────
+     Countdown to monthly end
+     ─────────────────────────────── */
+  useEffect(() => {
+    const tick = () => {
       const { end } = getCurrentMonthlyPeriod();
-      const endTime = new Date(end + "T23:59:59Z").getTime();
-      const diff = endTime - Date.now();
-      const total = Math.max(0, Math.floor(diff / 1000));
+
+      // End of day UTC (correct)
+      const endTime = new Date(`${end}T23:59:59Z`).getTime();
+      const diff = Math.max(0, endTime - Date.now());
+      const total = Math.floor(diff / 1000);
 
       setTimeLeft({
         days: Math.floor(total / 86400),
@@ -66,32 +80,18 @@ const RoobetPage: React.FC = () => {
       });
     };
 
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
+    tick();
+    const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // ───────────────────────────────
-  // Fetch leaderboard on load
-  // ───────────────────────────────
-  useEffect(() => {
-    fetchLeaderboard();
-  }, []);
-
-  // Auto-refresh monthly label every minute
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setMonthlyLabel(formatMonthlyRange());
-    }, 60000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const topTenPlayers = leaderboard?.data?.slice(0, 10) || [];
+  const topTenPlayers = leaderboard?.data?.slice(0, 10) ?? [];
 
   return (
     <div className="relative flex flex-col min-h-screen text-[#FFFBED] overflow-hidden">
+      {/* Background */}
       <div
-        className="fixed inset-0 bg-contain bg-center bg-no-repeat opacity-44 z-0"
+        className="fixed inset-0 bg-contain bg-center bg-no-repeat opacity-40 z-0"
         style={{
           backgroundImage: `url('https://i.ibb.co/2YNrPKrD/3dgifmaker96052.gif')`,
           backgroundColor: "#000",
@@ -101,15 +101,19 @@ const RoobetPage: React.FC = () => {
 
       <div className="relative z-10">
         <Navbar />
+
         <main className="flex-grow w-full px-6 py-12 mx-auto max-w-7xl text-center">
           <h1 className="text-4xl md:text-5xl font-extrabold text-[#F1A82F] mb-2">
             💰 $1,250 MONTHLY LEADERBOARD 💰
           </h1>
+
           <p className="text-[#F1A82F]/80 mb-8 text-lg">{monthlyLabel}</p>
 
           {/* Timer */}
           <div className="mb-8">
-            <h3 className="text-2xl text-[#F1A82F] font-bold mb-2">Leaderboard Ends In</h3>
+            <h3 className="text-2xl text-[#F1A82F] font-bold mb-2">
+              Leaderboard Ends In
+            </h3>
             <div className="flex justify-center gap-4 text-2xl font-extrabold text-[#F9B97C]">
               <TimerBox label="Days" value={timeLeft.days} />
               <TimerBox label="Hours" value={timeLeft.hours} />
@@ -123,11 +127,16 @@ const RoobetPage: React.FC = () => {
             <Button
               className="bg-[#F1A82F] hover:bg-[#F9B97C] text-[#0F0F0F] px-6 py-3 rounded-full font-semibold shadow-lg"
               onClick={() =>
-                window.open("https://roobet.com/?ref=luckyw", "_blank", "noopener noreferrer")
+                window.open(
+                  "https://roobet.com/?ref=luckyw",
+                  "_blank",
+                  "noopener noreferrer"
+                )
               }
             >
               Join Now
             </Button>
+
             <Button
               className="bg-transparent border border-[#F1A82F] hover:bg-[#F1A82F]/10 text-[#F1A82F] px-6 py-3 rounded-full font-semibold flex items-center gap-2"
               onClick={() => setShowHowItWorks(true)}
@@ -136,24 +145,19 @@ const RoobetPage: React.FC = () => {
             </Button>
           </div>
 
-          {/* Prize Info */}
-          <p className="text-[#F1A82F]/80 mb-2 text-sm">
-            🏆 Prize Breakdown: ($500 MIN. WAGER REQUIRED TO BE ELIGIBLE)
-          </p>
-
           {/* Leaderboard */}
-          {loading && <p className="text-[#F1A82F]">Loading leaderboard...</p>}
+          {loading && <p className="text-[#F1A82F]">Loading leaderboard…</p>}
           {error && <p className="text-[#F9B97C]">{error}</p>}
 
           {topTenPlayers.length > 0 ? (
             <div className="overflow-x-auto mb-12">
-              <table className="w-full table-auto border-collapse bg-[#0F0F0F]/80 backdrop-blur-md rounded-2xl shadow-lg">
-                <thead className="bg-[#F1A82F] text-[#0F0F0F] uppercase text-sm md:text-base">
+              <table className="w-full table-auto bg-[#0F0F0F]/80 backdrop-blur-md rounded-2xl shadow-lg">
+                <thead className="bg-[#F1A82F] text-[#0F0F0F] uppercase text-sm">
                   <tr>
-                    <th className="p-4 text-center w-[10%]">Rank</th>
-                    <th className="p-4 text-center w-[40%]">Player</th>
-                    <th className="p-4 text-right w-[25%]">Wagered</th>
-                    <th className="p-4 text-right w-[25%]">Prize</th>
+                    <th className="p-4 w-[10%]">Rank</th>
+                    <th className="p-4 w-[40%]">Player</th>
+                    <th className="p-4 w-[25%] text-right">Wagered</th>
+                    <th className="p-4 w-[25%] text-right">Prize</th>
                   </tr>
                 </thead>
 
@@ -173,26 +177,26 @@ const RoobetPage: React.FC = () => {
                     return (
                       <tr
                         key={p.uid}
-                        className="border-t border-[#F9B97C]/20 hover:bg-[#F9B97C]/10 transition-all duration-200"
+                        className="border-t border-[#F9B97C]/20 hover:bg-[#F9B97C]/10 transition"
                       >
-                        <td className="p-4 text-center font-bold">
+                        <td className="p-4 text-center">
                           <span
-                            className={`inline-flex justify-center items-center w-10 h-10 rounded-full font-semibold ${rankColor}`}
+                            className={`inline-flex w-10 h-10 items-center justify-center rounded-full font-bold ${rankColor}`}
                           >
                             #{r}
                           </span>
                         </td>
 
-                        <td className="p-4 font-semibold text-center truncate max-w-[200px]">
+                        <td className="p-4 font-semibold text-center truncate">
                           {p.username}
                         </td>
 
                         <td className="p-4 text-right text-[#F1A82F]/80">
-                          {p.weightedWagered.toFixed(2)}
+                          {Number(p.weightedWagered).toLocaleString()}
                         </td>
 
-                        <td className="p-4 text-right font-semibold text-[#f9b97c]">
-                          {prizeByRank[r] || "$0"}
+                        <td className="p-4 text-right font-semibold text-[#F9B97C]">
+                          {prizeByRank[r] ?? "$0"}
                         </td>
                       </tr>
                     );
@@ -201,30 +205,35 @@ const RoobetPage: React.FC = () => {
               </table>
             </div>
           ) : (
-            !loading &&
-            !error && <p className="text-[#F1A82F]/70 mb-12">No players yet this period.</p>
+            !loading && !error && (
+              <p className="text-[#F1A82F]/70 mb-12">
+                No players yet this period.
+              </p>
+            )
           )}
         </main>
+
         <Footer />
       </div>
 
-      {/* How It Works Modal */}
+      {/* How it works */}
       <Dialog open={showHowItWorks} onOpenChange={setShowHowItWorks}>
         <DialogContent className="bg-[#0F0F0F] border border-[#F1A82F]/30 text-[#FFFBED] max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-[#F1A82F] text-2xl font-bold text-center">
               How the Leaderboard Works
             </DialogTitle>
-            <DialogDescription className="text-[#F1A82F]/80 text-center mb-4">
-              Weighted wagers based on RTP determine leaderboard position.
+            <DialogDescription className="text-[#F1A82F]/80 text-center">
+              Weighted wagers based on RTP determine ranking.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 text-[#FFFBED]/90">
-            <p>🎯 RTP ≤ <strong>97%</strong> → <strong className="text-[#F1A82F]">100%</strong> weight</p>
-            <p>🎯 RTP &gt; 97% → <strong className="text-[#F1A82F]">50%</strong> weight</p>
-            <p>🎯 RTP ≥ <strong>98%</strong> → <strong className="text-[#F1A82F]">10%</strong> weight</p>
-            <p className="text-sm border-t border-[#F1A82F]/30 pt-3">
-              ⚠️ Only <strong>Slots</strong> & <strong>Housegames</strong> count (Dice excluded).
+
+          <div className="space-y-3 text-sm">
+            <p>🎯 RTP ≤ 97% → <strong>100%</strong> weight</p>
+            <p>🎯 RTP &gt; 97% → <strong>50%</strong> weight</p>
+            <p>🎯 RTP ≥ 98% → <strong>10%</strong> weight</p>
+            <p className="border-t border-[#F1A82F]/30 pt-3">
+              ⚠️ Slots & Housegames only (Dice excluded)
             </p>
           </div>
         </DialogContent>
@@ -233,7 +242,9 @@ const RoobetPage: React.FC = () => {
   );
 };
 
-// Timer Component
+/* ───────────────────────────────
+   Timer Box
+   ─────────────────────────────── */
 const TimerBox = ({ label, value }: { label: string; value: number }) => (
   <div className="flex flex-col items-center bg-[#F1A82F]/10 px-4 py-2 rounded-xl">
     <span className="text-3xl">{String(value).padStart(2, "0")}</span>
