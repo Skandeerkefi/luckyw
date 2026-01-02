@@ -29,8 +29,8 @@ export function getCurrentMonthlyPeriod() {
   const now = new Date();
   const year = now.getUTCFullYear();
 
-  const start = new Date(`${year}-12-08T00:00:00Z`);
-  const end = new Date(`${year }-01-08T00:00:00Z`);
+  const start = new Date(`${year-1}-12-08T00:00:00Z`);
+  const end = new Date(`${year}-01-08T00:00:00Z`);
 
   const format = (d: Date) => d.toISOString().split("T")[0];
 
