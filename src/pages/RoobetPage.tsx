@@ -195,7 +195,7 @@ const RoobetPage: React.FC = () => {
                           ${Number(p.weightedWagered).toLocaleString(undefined, {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
-})}`
+})}
 
 
                         </td>
