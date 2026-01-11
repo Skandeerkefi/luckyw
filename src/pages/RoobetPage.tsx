@@ -13,19 +13,19 @@ import {
 import { Info } from "lucide-react";
 
 /* ───────────────────────────────
-   MONTHLY PRIZE MAPPING ($1250)
+   MONTHLY PRIZE MAPPING ($2000)
    ─────────────────────────────── */
 const prizeByRank: Record<number, string> = {
-  1: "$500",
-  2: "$300",
-  3: "$150",
-  4: "$100",
-  5: "$75",
-  6: "$25",
-  7: "$25",
-  8: "$25",
-  9: "$25",
-  10: "$25",
+  1: "$600",
+  2: "$350",
+  3: "$250",
+  4: "$200",
+  5: "$150",
+  6: "$120",
+  7: "$100",
+  8: "$90",
+  9: "$80",
+  10: "$60",
 };
 
 /* ───────────────────────────────
@@ -54,7 +54,7 @@ const RoobetPage: React.FC = () => {
   const monthlyLabel = useMemo(formatMonthlyRange, []);
 
   /* ───────────────────────────────
-     Fetch leaderboard (safe)
+     Fetch leaderboard
      ─────────────────────────────── */
   useEffect(() => {
     fetchLeaderboard("monthly");
@@ -66,8 +66,6 @@ const RoobetPage: React.FC = () => {
   useEffect(() => {
     const tick = () => {
       const { end } = getCurrentMonthlyPeriod();
-
-      // End of day UTC (correct)
       const endTime = new Date(`${end}T23:59:59Z`).getTime();
       const diff = Math.max(0, endTime - Date.now());
       const total = Math.floor(diff / 1000);
@@ -85,26 +83,26 @@ const RoobetPage: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const topTenPlayers = leaderboard?.data?.slice(0, 10) ?? [];
+  const topPlayers = leaderboard?.data?.slice(0, 15) ?? [];
 
   return (
     <div className="relative flex flex-col min-h-screen text-[#FFFBED] overflow-hidden">
       {/* Background */}
       <div
-        className="fixed inset-0 bg-contain bg-center bg-no-repeat opacity-40 z-0"
+        className="fixed inset-0 z-0 bg-center bg-no-repeat bg-contain opacity-40"
         style={{
           backgroundImage: `url('https://i.ibb.co/2YNrPKrD/3dgifmaker96052.gif')`,
           backgroundColor: "#000",
         }}
       />
-      <div className="fixed inset-0 bg-gradient-to-b from-black/80 via-black/90 to-black z-0" />
+      <div className="fixed inset-0 z-0 bg-gradient-to-b from-black/80 via-black/90 to-black" />
 
       <div className="relative z-10">
         <Navbar />
 
-        <main className="flex-grow w-full px-6 py-12 mx-auto max-w-7xl text-center">
+        <main className="flex-grow w-full px-6 py-12 mx-auto text-center max-w-7xl">
           <h1 className="text-4xl md:text-5xl font-extrabold text-[#F1A82F] mb-2">
-            💰 $1,250 MONTHLY LEADERBOARD 💰
+            💰 $2,000 MONTHLY LEADERBOARD 💰
           </h1>
 
           <p className="text-[#F1A82F]/80 mb-8 text-lg">{monthlyLabel}</p>
@@ -149,8 +147,8 @@ const RoobetPage: React.FC = () => {
           {loading && <p className="text-[#F1A82F]">Loading leaderboard…</p>}
           {error && <p className="text-[#F9B97C]">{error}</p>}
 
-          {topTenPlayers.length > 0 ? (
-            <div className="overflow-x-auto mb-12">
+          {topPlayers.length > 0 ? (
+            <div className="mb-12 overflow-x-auto">
               <table className="w-full table-auto bg-[#0F0F0F]/80 backdrop-blur-md rounded-2xl shadow-lg">
                 <thead className="bg-[#F1A82F] text-[#0F0F0F] uppercase text-sm">
                   <tr>
@@ -162,7 +160,7 @@ const RoobetPage: React.FC = () => {
                 </thead>
 
                 <tbody>
-                  {topTenPlayers.map((p) => {
+                  {topPlayers.map((p) => {
                     const r = p.rankLevel;
 
                     const rankColor =
@@ -172,7 +170,9 @@ const RoobetPage: React.FC = () => {
                         ? "bg-gray-400 text-black"
                         : r === 3
                         ? "bg-yellow-700 text-white"
-                        : "bg-[#F1A82F]/20 text-[#F1A82F]";
+                        : r <= 10
+                        ? "bg-[#F1A82F]/20 text-[#F1A82F]"
+                        : "bg-white/10 text-white/60";
 
                     return (
                       <tr
@@ -192,7 +192,11 @@ const RoobetPage: React.FC = () => {
                         </td>
 
                         <td className="p-4 text-right text-[#F1A82F]/80">
-                          {Number(p.weightedWagered).toLocaleString()}
+                          {Number(p.weightedWagered).toLocaleString(undefined, {
+  minimumFractionDigits: 3,
+  maximumFractionDigits: 3,
+})}
+
                         </td>
 
                         <td className="p-4 text-right font-semibold text-[#F9B97C]">
@@ -205,7 +209,8 @@ const RoobetPage: React.FC = () => {
               </table>
             </div>
           ) : (
-            !loading && !error && (
+            !loading &&
+            !error && (
               <p className="text-[#F1A82F]/70 mb-12">
                 No players yet this period.
               </p>
@@ -216,7 +221,7 @@ const RoobetPage: React.FC = () => {
         <Footer />
       </div>
 
-      {/* How it works */}
+      {/* How it works dialog */}
       <Dialog open={showHowItWorks} onOpenChange={setShowHowItWorks}>
         <DialogContent className="bg-[#0F0F0F] border border-[#F1A82F]/30 text-[#FFFBED] max-w-lg">
           <DialogHeader>

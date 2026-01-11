@@ -27,21 +27,37 @@ interface RoobetStore {
    ──────────────────────────────────────────────── */
 export function getCurrentMonthlyPeriod() {
   const now = new Date();
-  const year = now.getUTCFullYear();
 
-  const start = new Date(`${year-1}-12-08T00:00:00Z`);
-  const end = new Date(`${year}-01-08T00:00:00Z`);
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth(); // 0 = Jan
+
+  let start: Date;
+  let end: Date;
+
+  if (now.getUTCDate() >= 9) {
+    // Current cycle: 9 this month → 9 next month
+    start = new Date(Date.UTC(year, month, 9));
+    end = new Date(Date.UTC(year, month + 1, 9));
+  } else {
+    // Previous cycle: 9 last month → 9 this month
+    start = new Date(Date.UTC(year, month - 1, 9));
+    end = new Date(Date.UTC(year, month, 9));
+  }
 
   const format = (d: Date) => d.toISOString().split("T")[0];
 
-  return { start: format(start), end: format(end) };
+  return {
+    start: format(start),
+    end: format(end),
+  };
 }
+
 
 /* ────────────────────────────────────────────────
    BIWEEKLY PERIOD (rotating every 14 days starting Dec 8)
    ──────────────────────────────────────────────── */
 export function getCurrentBiweekly() {
-  const startBase = new Date("2024-12-08T00:00:00Z"); // Fixed start
+  const startBase = new Date("2024-12-09T00:00:00Z"); // Fixed start
 
   const now = new Date();
 

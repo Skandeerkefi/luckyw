@@ -13,7 +13,7 @@ const HomePage = () => {
       
        {/* Full Page GIF Background */}
       <div
-        className="fixed inset-0 bg-contain bg-center bg-no-repeat opacity-44 z-0"
+        className="fixed inset-0 z-0 bg-center bg-no-repeat bg-contain opacity-44"
         style={{
           backgroundImage: `url('https://i.ibb.co/2YNrPKrD/3dgifmaker96052.gif)`,
           backgroundColor: "#000"
@@ -22,13 +22,13 @@ const HomePage = () => {
 
       
       {/* Gradient Overlay for better readability */}
-      <div className="fixed inset-0 bg-gradient-to-b from-black/80 via-black/90 to-black z-0"></div>
+      <div className="fixed inset-0 z-0 bg-gradient-to-b from-black/80 via-black/90 to-black"></div>
 
       <div className="relative z-10">
         <Navbar />
 
        {/* HERO */}
-<section className="relative flex flex-col items-center justify-center text-center pt-20 pb-1 px-6">
+<section className="relative flex flex-col items-center justify-center px-6 pt-20 pb-1 text-center">
 
   <motion.h1
     initial={{ opacity: 0, y: 30 }}
@@ -63,30 +63,30 @@ const HomePage = () => {
 
 
         {/* OFFERS SECTION - Symmetric Redesign */}
-<section className="py-12 px-4 md:px-8 relative overflow-hidden ">
+<section className="relative px-4 py-12 overflow-hidden md:px-8 ">
   {/* Background Elements */}
   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#2F1C12]/20 to-transparent"></div>
   <div className="absolute top-10 left-1/4 w-72 h-72 bg-[#E39E2D]/5 rounded-full blur-3xl"></div>
   <div className="absolute bottom-10 right-1/4 w-72 h-72 bg-[#FFFFFF]/5 rounded-full blur-3xl"></div>
 
-  <div className="max-w-7xl mx-auto relative">
+  <div className="relative mx-auto max-w-7xl">
     {/* Section Header */}
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
-      className="text-center mb-16"
+      className="mb-16 text-center"
     >
-      <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">
+      <h2 className="mb-4 text-4xl font-extrabold text-white md:text-5xl">
         Exclusive Offers
       </h2>
-      <p className="text-white/60 text-lg md:text-xl">
+      <p className="text-lg text-white/60 md:text-xl">
         Grab your rewards and join the excitement today!
       </p>
     </motion.div>
 
     {/* Cards Grid */}
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
       
       {/* CARD TEMPLATE */}
       {[
@@ -125,7 +125,7 @@ const HomePage = () => {
     statsMain: "$50",
     statsSub: "BONUS",
     extraInfo: [
-      "Wager $500 before the current leaderboard ends",
+      "Wager $2000 before the current leaderboard ends",
       "Use Roobet code: luckyw"
     ],
     badge: "NEW",
@@ -138,7 +138,7 @@ const HomePage = () => {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.7, type: "spring", bounce: 0.3, delay: idx * 0.1 }}
           whileHover={{ y: -10, scale: 1.02 }}
-          className="relative group cursor-pointer flex flex-col h-full"
+          className="relative flex flex-col h-full cursor-pointer group"
           onClick={() => window.open(offer.button.link, "_blank")}
         >
           {/* Glow Effect */}
@@ -164,18 +164,18 @@ const HomePage = () => {
               <div>
                 <h3 className="text-2xl font-bold text-white">{offer.title}</h3>
                 {offer.description && (
-                  <p className="text-white/60 text-sm">{offer.description}</p>
+                  <p className="text-sm text-white/60">{offer.description}</p>
                 )}
               </div>
             </div>
 
             {/* Stats */}
-            <div className="text-center mb-6">
+            <div className="mb-6 text-center">
               <div className="text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-[#E39E2D] to-[#FFFFFF]">
                 {offer.statsMain}
               </div>
               {offer.statsSub && (
-                <div className="text-white font-bold text-xl mt-1">{offer.statsSub}</div>
+                <div className="mt-1 text-xl font-bold text-white">{offer.statsSub}</div>
               )}
               {offer.extraInfo.length > 0 && (
                 <div className="mt-4 space-y-2 text-sm text-white/70">
@@ -187,7 +187,7 @@ const HomePage = () => {
             </div>
 
             {/* Button */}
-            <button className="relative w-full group/btn mt-auto">
+            <button className="relative w-full mt-auto group/btn">
               <div className="absolute inset-0 bg-gradient-to-r from-[#E39E2D] to-[#FFFFFF] rounded-xl blur-md opacity-0 group-hover/btn:opacity-70 transition duration-300"></div>
               <div className="relative bg-gradient-to-r from-[#E39E2D] to-[#F8C463] hover:from-[#FFFFFF] hover:to-[#E39E2D] text-black font-bold py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-3">
                 <span>{offer.button.text}</span>
@@ -206,9 +206,9 @@ const HomePage = () => {
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ delay: 0.5 }}
-      className="text-center mt-16"
+      className="mt-16 text-center"
     >
-      <p className="text-white/50 text-sm">
+      <p className="text-sm text-white/50">
         All offers require account verification. Terms and conditions apply.
       </p>
     </motion.div>
@@ -221,7 +221,7 @@ const HomePage = () => {
     Leaderboard Rules 📜
   </h2>
 
-  <div className="max-w-3xl mx-auto text-white/80 text-lg space-y-6 leading-relaxed">
+  <div className="max-w-3xl mx-auto space-y-6 text-lg leading-relaxed text-white/80">
     <p>
       Weighted wagers based on RTP determine your leaderboard score.
     </p>
@@ -238,7 +238,7 @@ const HomePage = () => {
       </p>
     </div>
 
-    <p className="text-white/60 mt-6">
+    <p className="mt-6 text-white/60">
       These weights prevent leaderboard abuse and ensure fair competition.
     </p>
   </div>
@@ -249,7 +249,7 @@ const HomePage = () => {
     Socials 🌐
   </h2>
 
-  <div className="flex justify-center gap-8 flex-wrap">
+  <div className="flex flex-wrap justify-center gap-8">
     {[
       {
         href: "https://kick.com/luckyw",
@@ -293,10 +293,10 @@ const HomePage = () => {
         target="_blank"
         rel="noopener noreferrer"
         whileHover={{ scale: 1.2 }}
-        className="relative rounded-full p-2 transition-transform duration-300"
+        className="relative p-2 transition-transform duration-300 rounded-full"
       >
         <div
-          className="w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center shadow-lg"
+          className="flex items-center justify-center w-16 h-16 rounded-full shadow-lg md:w-20 md:h-20"
           style={{
             background: `radial-gradient(circle at 50% 50%, ${social.colorFrom}, ${social.colorTo})`,
           }}
@@ -313,7 +313,7 @@ const HomePage = () => {
 </section>
 
 {/* CURRENT LEADERBOARD */}
-<section className="py-24 px-6 bg-black/50 backdrop-blur-xl">
+<section className="px-6 py-24 bg-black/50 backdrop-blur-xl">
   <h2 className="text-5xl text-center font-extrabold text-[#F1A82F] mb-14">
     Current Leaderboard 🏆
   </h2>
@@ -331,7 +331,7 @@ const HomePage = () => {
 
 
 {/* STREAM */}
-        <section className="py-20 px-8 text-center">
+        <section className="px-8 py-20 text-center">
           <motion.h2
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
