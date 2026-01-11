@@ -15,12 +15,12 @@ const OffersPage = () => {
       button: { text: "Claim Free Spins", link: "https://discord.com/invite/pEHw9xyerw" },
     },
     {
-      title: "Bi-Weekly Leaderboard",
+      title: "Monthly Leaderboard",
       icon: "🏆",
       description: "Compete against the community every 2 weeks",
-      statsMain: "$750",
+      statsMain: "$2000",
       statsSub: "Total Prize Pool",
-      extraInfo: ["$500 MIN. WAGER REQ TO BE ELIGIBLE FOR A PRIZE"],
+      extraInfo: ["$2000 MIN. WAGER REQ TO BE ELIGIBLE FOR A PRIZE"],
       badge: "POPULAR",
       button: { text: "Join Leaderboard", link: "https://roobet.com/?ref=luckyw" },
     },
@@ -39,18 +39,18 @@ const OffersPage = () => {
     <div className="text-[#FFFBED] min-h-screen relative">
       {/* Animated Home Page Background */}
       <div
-        className="fixed inset-0 bg-contain bg-center bg-no-repeat opacity-40 z-0"
+        className="fixed inset-0 z-0 bg-center bg-no-repeat bg-contain opacity-40"
         style={{
           backgroundImage: `url('https://i.ibb.co/2YNrPKrD/3dgifmaker96052.gif')`,
           backgroundColor: "#000",
         }}
       />
-      <div className="fixed inset-0 bg-gradient-to-b from-black/80 via-black/90 to-black z-0" />
+      <div className="fixed inset-0 z-0 bg-gradient-to-b from-black/80 via-black/90 to-black" />
 
       <div className="relative z-10">
         <Navbar />
 
-        <section className="py-24 px-6 max-w-5xl mx-auto">
+        <section className="max-w-5xl px-6 py-24 mx-auto">
           <h2 className="text-5xl font-extrabold text-[#F1A82F] text-center mb-16">
             Exclusive Offers
           </h2>
@@ -76,16 +76,16 @@ const OffersPage = () => {
                 <div className="text-6xl md:text-7xl">{offer.icon}</div>
 
                 {/* Details */}
-                <div className="flex-1 flex flex-col items-center md:items-start gap-2">
+                <div className="flex flex-col items-center flex-1 gap-2 md:items-start">
                   <h3 className="text-3xl md:text-4xl font-bold text-[#F1A82F]">{offer.title}</h3>
-                  {offer.description && <p className="text-white/70 text-center md:text-left">{offer.description}</p>}
+                  {offer.description && <p className="text-center text-white/70 md:text-left">{offer.description}</p>}
 
                   <div className="text-xl font-bold text-white/90 bg-[#F1A82F]/20 px-4 py-2 rounded-full mt-2">
                     {offer.statsMain} {offer.statsSub}
                   </div>
 
                   {offer.extraInfo.map((info, i) => (
-                    <p key={i} className="text-white/60 text-sm mt-1">{info}</p>
+                    <p key={i} className="mt-1 text-sm text-white/60">{info}</p>
                   ))}
 
                   <button

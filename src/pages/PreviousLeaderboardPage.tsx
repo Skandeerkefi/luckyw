@@ -12,14 +12,14 @@ import {
 } from "@/components/ui/dialog";
 import { Info } from "lucide-react";
 import { getCurrentBiweekly } from "@/store/RoobetStore";
-
+import { getCurrentMonthlyPeriod } from "@/store/RoobetStore";
 // Prize mapping by rank
 const prizeByRank: Record<number, string> = {
-  1: "$300",
-  2: "$150",
-  3: "$75",
-  4: "$50",
-  5: "$50",
+  1: "$500",
+  2: "$300",
+  3: "$150",
+  4: "$100",
+  5: "$75",
   6: "$25",
   7: "$25",
   8: "$25",
@@ -27,18 +27,24 @@ const prizeByRank: Record<number, string> = {
   10: "$25",
 };
 
+
 // Format previous biweekly range
-function formatPreviousBiweeklyRange() {
-  const { start } = getCurrentBiweekly();
-  const prevEnd = new Date(start);
-  prevEnd.setDate(prevEnd.getDate() - 1);
+function formatPreviousMonthlyRange() {
+  const { start } = getCurrentMonthlyPeriod();
+
+  const currentStart = new Date(start);
+  const prevEnd = new Date(currentStart);
+  prevEnd.setUTCDate(prevEnd.getUTCDate() - 1);
+
   const prevStart = new Date(prevEnd);
-  prevStart.setDate(prevEnd.getDate() - 13);
+  prevStart.setUTCMonth(prevStart.getUTCMonth() - 1);
 
   const startStr = `${prevStart.getUTCMonth() + 1}/${prevStart.getUTCDate()}`;
   const endStr = `${prevEnd.getUTCMonth() + 1}/${prevEnd.getUTCDate()}`;
+
   return `${startStr}-${endStr} Edition 🏆`;
 }
+
 
 const PreviousLeaderboardPage: React.FC = () => {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
@@ -46,42 +52,42 @@ const PreviousLeaderboardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
-  const prizes = [300, 150, 75]; // Top 3 prizes
+ const prizes = [500, 300, 150]; // Top 3 prizes
   const medals = ["🥇", "🥈", "🥉"]; // Top 3 medals
 
   useEffect(() => {
-    const fetchPreviousLeaderboard = async () => {
-      try {
-        const { start: currentStart } = getCurrentBiweekly();
+  const fetchPreviousLeaderboard = async () => {
+    try {
+      const { start: currentStart } = getCurrentMonthlyPeriod();
 
-        const prevEnd = new Date(currentStart);
-        prevEnd.setDate(prevEnd.getDate() - 1);
+      const prevEnd = new Date(currentStart);
+      prevEnd.setUTCDate(prevEnd.getUTCDate() - 1);
 
-        const prevStart = new Date(prevEnd);
-        prevStart.setDate(prevEnd.getDate() - 13);
+      const prevStart = new Date(prevEnd);
+      prevStart.setUTCMonth(prevStart.getUTCMonth() - 1);
 
-        const format = (d: Date) => d.toISOString().split("T")[0];
-        const url = `https://luckywdata-production.up.railway.app/api/leaderboard/${format(prevStart)}/${format(prevEnd)}`;
+      const format = (d: Date) => d.toISOString().split("T")[0];
 
-        const res = await axios.get(url, { timeout: 8000 });
-        if (!res.data || !res.data.data) throw new Error("Invalid API response");
+      const url = `https://luckywdata-production.up.railway.app/api/leaderboard/${format(prevStart)}/${format(prevEnd)}`;
 
-        // Sort descending by weightedWagered
-        const sorted = res.data.data.sort(
-          (a: any, b: any) => b.weightedWagered - a.weightedWagered
-        );
+      const res = await axios.get(url, { timeout: 8000 });
+      if (!res.data || !res.data.data) throw new Error("Invalid API response");
 
-        setLeaderboard(sorted.slice(0, 10)); // Top 10
-      } catch (err: any) {
-        console.error(err);
-        setError("Failed to fetch previous leaderboard.");
-      } finally {
-        setLoading(false);
-      }
-    };
+      const sorted = res.data.data.sort(
+        (a: any, b: any) => b.weightedWagered - a.weightedWagered
+      );
 
-    fetchPreviousLeaderboard();
-  }, []);
+      setLeaderboard(sorted.slice(0, 10));
+    } catch (err) {
+      setError("Failed to fetch previous leaderboard.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchPreviousLeaderboard();
+}, []);
+
 
   // Podium top 3 for visual effect
   const podiumOrder =
@@ -91,21 +97,24 @@ const PreviousLeaderboardPage: React.FC = () => {
     <div className="relative flex flex-col min-h-screen text-[#FFFBED] overflow-hidden">
       {/* Background */}
       <div
-        className="fixed inset-0 bg-contain bg-center bg-no-repeat opacity-40 z-0"
+        className="fixed inset-0 z-0 bg-center bg-no-repeat bg-contain opacity-40"
         style={{
           backgroundImage: `url('https://i.ibb.co/2YNrPKrD/3dgifmaker96052.gif')`,
           backgroundColor: "#000",
         }}
       />
-      <div className="fixed inset-0 bg-gradient-to-b from-black/80 via-black/90 to-black z-0" />
+      <div className="fixed inset-0 z-0 bg-gradient-to-b from-black/80 via-black/90 to-black" />
 
       <div className="relative z-10">
         <Navbar />
-        <main className="flex-grow w-full px-6 py-12 mx-auto max-w-7xl text-center">
+        <main className="flex-grow w-full px-6 py-12 mx-auto text-center max-w-7xl">
           <h1 className="text-4xl md:text-5xl font-extrabold text-[#F1A82F] mb-2">
             🏆 PREVIOUS LEADERBOARD 🏆
           </h1>
-          <p className="text-[#F1A82F]/80 mb-8 text-lg">{formatPreviousBiweeklyRange()}</p>
+          <p className="text-[#F1A82F]/80 mb-8 text-lg">
+  {formatPreviousMonthlyRange()}
+</p>
+
 
           {/* Buttons */}
           <div className="flex items-center justify-center gap-4 mb-10">
@@ -127,7 +136,7 @@ const PreviousLeaderboardPage: React.FC = () => {
 
           {/* Podium Top 3 */}
           {leaderboard.length > 0 && (
-            <div className="grid grid-cols-3 gap-6 items-end mb-12">
+            <div className="grid items-end grid-cols-3 gap-6 mb-12">
               {podiumOrder.slice(0, 3).map((player, idx) => {
                 const isTop1 = player.uid === leaderboard[0].uid;
                 const medalIdx = leaderboard.indexOf(player);
@@ -138,11 +147,11 @@ const PreviousLeaderboardPage: React.FC = () => {
                       isTop1 ? "scale-110" : "scale-100"
                     }`}
                   >
-                    <div className="text-4xl mb-2">{medals[medalIdx]}</div>
+                    <div className="mb-2 text-4xl">{medals[medalIdx]}</div>
                     <div className="text-2xl md:text-3xl font-bold text-[#F1A82F] mb-2">
                       {player.username}
                     </div>
-                    <div className="text-white/80 mb-4">
+                    <div className="mb-4 text-white/80">
                       {player.weightedWagered.toLocaleString()} Wagered
                     </div>
                     <div className="text-xl font-bold text-white/90 bg-[#F1A82F]/20 px-4 py-2 rounded-full">
@@ -187,7 +196,7 @@ const PreviousLeaderboardPage: React.FC = () => {
                         key={p.uid}
                         className="border-t border-[#F9B97C]/20 hover:bg-[#F9B97C]/10 transition-all duration-200"
                       >
-                        <td className="p-4 text-center font-bold">
+                        <td className="p-4 font-bold text-center">
                           <span
                             className={`inline-flex justify-center items-center w-10 h-10 rounded-full font-semibold ${rankColor}`}
                           >
