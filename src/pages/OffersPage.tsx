@@ -17,10 +17,10 @@ const OffersPage = () => {
     {
       title: "Monthly Leaderboard",
       icon: "🏆",
-      description: "see rules for details",
+      description: "Dee rules for Details",
       statsMain: "$2000",
       statsSub: "Total Prize Pool",
-      extraInfo: ["paid out at the end of the each leaderboard"],
+      extraInfo: ["Paid out at the end of the each Leaderboard"],
       badge: "POPULAR",
       button: { text: "Join Leaderboard", link: "https://roobet.com/?ref=luckyw" },
     },
