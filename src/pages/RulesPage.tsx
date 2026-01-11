@@ -29,7 +29,7 @@ const RulesPage = () => {
               <h3 className="text-3xl font-bold text-[#F1A82F] mb-4">Wagering Rules</h3>
               <p>Only <strong>Slots</strong> and <strong>House Games</strong> are eligible.</p>
               <p>🚫 Dice, live games, and sports bets do not count.</p>
-              
+              <p>The leaderboard is based on weighted wagered amounts.</p>
             </div>
 
             {/* Wager Contribution Card */}
