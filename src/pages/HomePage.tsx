@@ -96,16 +96,16 @@ const HomePage = () => {
     description: "Weekly free spins every Sunday",
     statsMain: "100",
     statsSub: "FREE SPINS",
-    extraInfo: ["Minimum $1000 weekly wager", "Available every Sunday"],
+    extraInfo: ["Have $1000 weighted wager Sunday thru Sunday and get 100 free spins"],
     button: { text: "Claim Free Spins", link: "https://discord.com/invite/pEHw9xyerw" }
   },
   {
     title: "Monthly Leaderboard",
     icon: "🏆",
-    description: "Compete against the community every 2 weeks",
-    statsMain: "$1250",
+    description: "see rules for details",
+    statsMain: "$2000",
     statsSub: "Total Prize Pool",
-    extraInfo: ["$500 MIN. WAGER REQUIRED TO BE ELIGIBLE"],
+    extraInfo: ["$2000 MIN. WAGER REQUIRED TO BE ELIGIBLE"],
     badge: "POPULAR",
     button: { text: "Join Leaderboard", link: "https://roobet.com/?ref=luckyw" }
   },
@@ -115,7 +115,7 @@ const HomePage = () => {
     description: "",
     statsMain: "100%",
     statsSub: "",
-    extraInfo: ["Instant Payouts • Bi-Weekly"],
+    extraInfo: ["Instant Payouts • Monthly"],
     button: { text: "Start Earning", link: "https://discord.com/invite/pEHw9xyerw" }
   },
   {
