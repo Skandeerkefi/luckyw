@@ -125,7 +125,7 @@ const HomePage = () => {
     statsMain: "$50",
     statsSub: "BONUS",
     extraInfo: [
-      "Wager $2000 before the current leaderboard ends",
+      "$2000 weighted wager requirement, see rules",
       "Use Roobet code: luckyw"
     ],
     badge: "NEW",
