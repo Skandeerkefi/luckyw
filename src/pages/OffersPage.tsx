@@ -30,7 +30,7 @@ const OffersPage = () => {
       description: "Earn commissions from referrals",
       statsMain: "100%",
       statsSub: "Instant Payouts",
-      extraInfo: ["Instant Payouts • Bi-Weekly"],
+      extraInfo: ["Instant Payouts • Monthly"],
       button: { text: "Start Earning", link: "https://discord.com/invite/pEHw9xyerw" },
     },
   ];
