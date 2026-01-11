@@ -105,7 +105,7 @@ const HomePage = () => {
     description: "see rules for details",
     statsMain: "$2000",
     statsSub: "Total Prize Pool",
-    extraInfo: ["$2000 MIN. WAGER REQUIRED TO BE ELIGIBLE"],
+    extraInfo: [],
     badge: "POPULAR",
     button: { text: "Join Leaderboard", link: "https://roobet.com/?ref=luckyw" }
   },
