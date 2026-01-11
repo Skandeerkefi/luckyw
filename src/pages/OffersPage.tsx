@@ -20,7 +20,7 @@ const OffersPage = () => {
       description: "Compete against the community every 2 weeks",
       statsMain: "$2000",
       statsSub: "Total Prize Pool",
-      extraInfo: ["$2000 MIN. WAGER REQ TO BE ELIGIBLE FOR A PRIZE"],
+      extraInfo: ["paid out at the end of the each leaderboard"],
       badge: "POPULAR",
       button: { text: "Join Leaderboard", link: "https://roobet.com/?ref=luckyw" },
     },
