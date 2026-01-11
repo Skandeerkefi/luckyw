@@ -17,7 +17,7 @@ const OffersPage = () => {
     {
       title: "Monthly Leaderboard",
       icon: "🏆",
-      description: "Dee rules for Details",
+      description: "See rules for Details",
       statsMain: "$2000",
       statsSub: "Total Prize Pool",
       extraInfo: ["Paid out at the end of the each Leaderboard"],
