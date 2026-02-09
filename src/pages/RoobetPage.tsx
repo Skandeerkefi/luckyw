@@ -51,7 +51,7 @@ const RoobetPage: React.FC = () => {
     seconds: 0,
   });
 
-  const monthlyLabel = useMemo(formatMonthlyRange, []);
+  const monthlyLabel = formatMonthlyRange();
 
   /* ───────────────────────────────
      Fetch leaderboard
