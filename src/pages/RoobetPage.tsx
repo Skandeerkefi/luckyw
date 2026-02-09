@@ -66,7 +66,7 @@ const RoobetPage: React.FC = () => {
   useEffect(() => {
     const tick = () => {
       const { end } = getCurrentMonthlyPeriod();
-      const endTime = new Date(`${end}T23:59:59Z`).getTime();
+      const endTime = new Date(`${end}T00:00:00Z`).getTime();
       const diff = Math.max(0, endTime - Date.now());
       const total = Math.floor(diff / 1000);
 
