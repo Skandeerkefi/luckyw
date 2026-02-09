@@ -93,7 +93,11 @@ export function getCurrentBiweekly() {
   return { start: format(start), end: format(end) };
 }
 
-
+/* ────────────────────────────────────────────────
+   API COOLDOWN
+   ──────────────────────────────────────────────── */
+let lastFetch = 0;
+const COOLDOWN = 60 * 1000;
 
 /* ────────────────────────────────────────────────
    ZUSTAND STORE
@@ -104,8 +108,9 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
   error: null,
 
   fetchLeaderboard: async (type = "biweekly") => {
-    
-    
+    const now = Date.now();
+    if (now - lastFetch < COOLDOWN) return;
+    lastFetch = now;
 
     set({ loading: true, error: null });
 
