@@ -28,29 +28,45 @@ interface RoobetStore {
 export function getCurrentMonthlyPeriod() {
   const now = new Date();
 
-  const year = now.getUTCFullYear();
-  const month = now.getUTCMonth(); // 0 = Jan
+  // 🔥 First special cycle: Jan 9 → Feb 9
+  const firstStart = new Date(Date.UTC(2025, 0, 9, 0, 0, 0));
+  const firstEnd = new Date(Date.UTC(2025, 1, 9, 23, 59, 59));
 
   let start: Date;
-  let end: Date;
+  let endInclusive: Date;
 
-  if (now.getUTCDate() >= 9) {
-    // Current cycle: 9 this month → 9 next month
-    start = new Date(Date.UTC(year, month, 9));
-    end = new Date(Date.UTC(year, month + 1, 9));
+  // Special first cycle
+  if (now <= firstEnd) {
+    start = firstStart;
+    endInclusive = new Date(Date.UTC(2025, 1, 9));
   } else {
-    // Previous cycle: 9 last month → 9 this month
-    start = new Date(Date.UTC(year, month - 1, 9));
-    end = new Date(Date.UTC(year, month, 9));
+    const year = now.getUTCFullYear();
+    const month = now.getUTCMonth();
+    const day = now.getUTCDate();
+
+    if (day >= 10) {
+      // Current cycle: 10 → 9 next month
+      start = new Date(Date.UTC(year, month, 10));
+      endInclusive = new Date(Date.UTC(year, month + 1, 9));
+    } else {
+      // Previous cycle: 10 last month → 9 this month
+      start = new Date(Date.UTC(year, month - 1, 9));
+      endInclusive = new Date(Date.UTC(year, month, 9));
+    }
   }
+
+  // API wants exclusive end → add 1 day
+  const apiEnd = new Date(endInclusive);
+  apiEnd.setUTCDate(apiEnd.getUTCDate() + 1);
 
   const format = (d: Date) => d.toISOString().split("T")[0];
 
   return {
-    start: format(start),
-    end: format(end),
+    start: format(start),   // inclusive
+    end: format(apiEnd),    // exclusive
   };
 }
+
 
 
 /* ────────────────────────────────────────────────
