@@ -28,14 +28,12 @@ interface RoobetStore {
 export function getCurrentMonthlyPeriod() {
   const now = new Date();
 
-  // 🔥 First special cycle: Jan 9 → Feb 9
   const firstStart = new Date(Date.UTC(2025, 0, 9, 0, 0, 0));
   const firstEnd = new Date(Date.UTC(2025, 1, 9, 23, 59, 59));
 
   let start: Date;
   let endInclusive: Date;
 
-  // Special first cycle
   if (now <= firstEnd) {
     start = firstStart;
     endInclusive = new Date(Date.UTC(2025, 1, 9));
@@ -45,42 +43,32 @@ export function getCurrentMonthlyPeriod() {
     const day = now.getUTCDate();
 
     if (day >= 10) {
-      // Current cycle: 10 → 9 next month
       start = new Date(Date.UTC(year, month, 10));
       endInclusive = new Date(Date.UTC(year, month + 1, 9));
     } else {
-      // Previous cycle: 10 last month → 9 this month
       start = new Date(Date.UTC(year, month - 1, 9));
       endInclusive = new Date(Date.UTC(year, month, 9));
     }
   }
 
-  // API wants exclusive end → add 1 day
   const apiEnd = new Date(endInclusive);
   apiEnd.setUTCDate(apiEnd.getUTCDate() + 1);
 
   const format = (d: Date) => d.toISOString().split("T")[0];
 
   return {
-    start: format(start),   // inclusive
-    end: format(apiEnd),    // exclusive
+    start: format(start),
+    end: format(apiEnd),
   };
 }
-
-
 
 /* ────────────────────────────────────────────────
    BIWEEKLY PERIOD (rotating every 14 days starting Dec 8)
    ──────────────────────────────────────────────── */
 export function getCurrentBiweekly() {
-  const startBase = new Date("2024-12-09T00:00:00Z"); // Fixed start
-
+  const startBase = new Date("2024-12-09T00:00:00Z");
   const now = new Date();
-
-  // Days passed since base period
   const diffDays = Math.floor((now.getTime() - startBase.getTime()) / (1000 * 60 * 60 * 24));
-
-  // Determine which 14-day block we're in
   const periodIndex = Math.floor(diffDays / 14);
 
   const start = new Date(startBase);
@@ -94,12 +82,6 @@ export function getCurrentBiweekly() {
 }
 
 /* ────────────────────────────────────────────────
-   API COOLDOWN
-   ──────────────────────────────────────────────── */
-let lastFetch = 0;
-const COOLDOWN = 60 * 1000;
-
-/* ────────────────────────────────────────────────
    ZUSTAND STORE
    ──────────────────────────────────────────────── */
 export const useRoobetStore = create<RoobetStore>((set) => ({
@@ -108,14 +90,9 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
   error: null,
 
   fetchLeaderboard: async (type = "biweekly") => {
-    const now = Date.now();
-    if (now - lastFetch < COOLDOWN) return;
-    lastFetch = now;
-
     set({ loading: true, error: null });
 
     try {
-      // Select period type
       const period =
         type === "monthly" ? getCurrentMonthlyPeriod() : getCurrentBiweekly();
 
