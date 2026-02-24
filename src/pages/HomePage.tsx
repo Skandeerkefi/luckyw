@@ -92,7 +92,7 @@ const HomePage = () => {
       className="mx-auto mb-10 w-full max-w-xl rounded-2xl border border-[#E39E2D]/30 bg-gradient-to-br from-[#3A2415] to-[#1F130C] px-6 py-5 text-center backdrop-blur-sm"
     >
       <div className="text-xl font-bold text-white/80 md:text-2xl">🎁 Total Given Away</div>
-      <div className="mt-1 text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-[#E39E2D] to-[#FFFFFF] md:text-6xl">+26000$</div>
+      <div className="mt-1 text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-[#E39E2D] to-[#FFFFFF] md:text-6xl">$26000+</div>
     </motion.div>
 
     {/* Cards Grid */}
