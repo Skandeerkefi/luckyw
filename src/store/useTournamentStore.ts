@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { useAuthStore } from "./useAuthStore";
 
 const API_BASES = [
-	"http://localhost:3000",
 	"https://luckywdata-production.up.railway.app",
 ];
 
