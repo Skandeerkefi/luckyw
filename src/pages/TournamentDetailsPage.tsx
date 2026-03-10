@@ -2,7 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { useTournamentStore, type TournamentMatch, type TournamentPlayer } from "@/store/useTournamentStore";
+import {
+	useTournamentStore,
+	type TournamentMatch,
+	type TournamentPlayer,
+} from "@/store/useTournamentStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -28,6 +32,28 @@ const roundLabel = (roundNumber: number, roundsCount: number) => {
 	return `Round ${roundNumber}`;
 };
 
+const teamRoundLabel = (roundIndex: number, roundsCount: number) => {
+	const roundNumber = roundIndex + 1;
+	if (roundNumber === roundsCount) return "Final";
+	if (roundNumber === roundsCount - 1) return "Semi-Finals";
+	if (roundNumber === roundsCount - 2) return "Quarter-Finals";
+	return `Round ${roundNumber}`;
+};
+
+const nextPowerOfTwo = (value: number) => {
+	let result = 1;
+	while (result < value) result *= 2;
+	return result;
+};
+
+const getTeamName = (teamNames: string[] | undefined, index: number) =>
+	teamNames?.[index] || `Team ${index + 1}`;
+
+const getTeamPositions = (index: number, teamSize: number) => {
+	const start = index * teamSize + 1;
+	return Array.from({ length: teamSize }, (_, offset) => start + offset);
+};
+
 function TournamentDetailsPage() {
 	const { id } = useParams();
 	const {
@@ -39,6 +65,7 @@ function TournamentDetailsPage() {
 		joinTournament,
 		startTournament,
 		submitMatchResult,
+		submitTeamResults,
 	} = useTournamentStore();
 	const { user, token } = useAuthStore();
 	const { toast } = useToast();
@@ -47,6 +74,7 @@ function TournamentDetailsPage() {
 	const [slotQuery, setSlotQuery] = useState("");
 	const [selectedSlot, setSelectedSlot] = useState<SlotSearchItem | null>(null);
 	const [resultsMap, setResultsMap] = useState<Record<string, { multiplier1: string; multiplier2: string }>>({});
+	const [teamMultiplierMap, setTeamMultiplierMap] = useState<Record<string, string>>({});
 	const debouncedQuery = useDebounce(slotQuery, 350);
 
 	useEffect(() => {
@@ -66,6 +94,16 @@ function TournamentDetailsPage() {
 		});
 	}, [debouncedQuery, searchSlots, clearSlotSearch, toast]);
 
+	useEffect(() => {
+		const nextMap: Record<string, string> = {};
+		for (const player of tournamentDetails?.players || []) {
+			if (player.multiplier != null) {
+				nextMap[player._id] = String(player.multiplier);
+			}
+		}
+		setTeamMultiplierMap(nextMap);
+	}, [tournamentDetails?.players]);
+
 	const groupedMatches = useMemo(() => {
 		const matches = tournamentDetails?.matches || [];
 		const grouped: Record<number, TournamentMatch[]> = {};
@@ -78,10 +116,18 @@ function TournamentDetailsPage() {
 
 	const occupiedPositions = useMemo(() => {
 		const map = new Map<number, TournamentPlayer>();
-		for (const p of tournamentDetails?.players || []) {
-			map.set(p.position, p);
+		for (const player of tournamentDetails?.players || []) {
+			map.set(player.position, player);
 		}
 		return map;
+	}, [tournamentDetails?.players]);
+
+	const takenSlotKeys = useMemo(() => {
+		const set = new Set<string>();
+		for (const player of tournamentDetails?.players || []) {
+			set.add(`${player.slotName}::${player.provider}`.toLowerCase());
+		}
+		return set;
 	}, [tournamentDetails?.players]);
 
 	const onJoin = async () => {
@@ -89,7 +135,7 @@ function TournamentDetailsPage() {
 		if (!selectedPosition) {
 			toast({
 				title: "Select position",
-				description: "Pick an open bracket place before joining.",
+				description: "Pick an open place before joining.",
 				variant: "destructive",
 			});
 			return;
@@ -98,7 +144,18 @@ function TournamentDetailsPage() {
 			toast({ title: "Login required", description: "Please login first.", variant: "destructive" });
 			return;
 		}
+
 		try {
+			const selectedKey = `${selectedSlot.slotName}::${selectedSlot.provider}`.toLowerCase();
+			if (takenSlotKeys.has(selectedKey)) {
+				toast({
+					title: "Slot unavailable",
+					description: "This slot is already chosen by another player.",
+					variant: "destructive",
+				});
+				return;
+			}
+
 			const slotDisplayName =
 				selectedSlot.name?.trim() || selectedSlot.slotName?.trim() || "";
 
@@ -157,6 +214,31 @@ function TournamentDetailsPage() {
 		}
 	};
 
+	const onSubmitTeamResults = async () => {
+		if (!id || !tournamentDetails) return;
+
+		const results = tournamentDetails.players.map((player) => ({
+			playerId: player._id,
+			multiplier: Number(teamMultiplierMap[player._id] ?? player.multiplier ?? ""),
+		}));
+
+		if (results.some((entry) => Number.isNaN(entry.multiplier) || entry.multiplier < 0)) {
+			toast({
+				title: "Invalid multipliers",
+				description: "Enter a valid non-negative multiplier for every team member.",
+				variant: "destructive",
+			});
+			return;
+		}
+
+		try {
+			await submitTeamResults(id, { results });
+			toast({ title: "Team results submitted" });
+		} catch (err: unknown) {
+			toast({ title: "Submit failed", description: getErrorMessage(err), variant: "destructive" });
+		}
+	};
+
 	if (!tournamentDetails) {
 		return (
 			<div className='relative flex flex-col min-h-screen text-white'>
@@ -181,10 +263,11 @@ function TournamentDetailsPage() {
 
 	const { tournament, players } = tournamentDetails;
 	const isAdmin = user?.role === "admin";
-	const currentUserEntry = players.find((p) => {
+	const isTeamTournament = tournament.format === "3v3";
+	const currentUserEntry = players.find((player) => {
 		if (!user) return false;
-		if (typeof p.userId === "string") return p.userId === user.id;
-		return p.userId?._id === user.id;
+		if (typeof player.userId === "string") return player.userId === user.id;
+		return player.userId?._id === user.id;
 	});
 	const isUserAlreadyJoined = Boolean(currentUserEntry);
 	const roundsCount = Math.max(
@@ -205,6 +288,90 @@ function TournamentDetailsPage() {
 			Math.pow(2, roundNumber - 1) * bracketStep - bracketRowHeight
 		);
 
+	const teamSize = tournament.teamSize || 3;
+	const teamCount =
+		tournament.teamCount ||
+		(tournament.teamSize && tournament.teamSize > 0
+			? Math.floor(tournament.maxPlayers / tournament.teamSize)
+			: Math.floor(tournament.maxPlayers / 3));
+	const teamKeys = Array.from(
+		{ length: Math.max(1, teamCount) },
+		(_, index) => `team-${index + 1}`
+	);
+
+	const teamColumns = teamKeys.map((teamKey, index) => {
+		const positions = getTeamPositions(index, teamSize);
+		const members = positions.map((position) => occupiedPositions.get(position) || null);
+		const calculatedTotal = members.reduce(
+			(sum, player) => sum + Number(player?.multiplier || 0),
+			0
+		);
+		const tournamentTeamResult = tournament.teamResults?.find(
+			(entry) => entry.teamKey === teamKey
+		);
+		return {
+			teamKey,
+			teamName: getTeamName(tournament.teamNames, index),
+			positions,
+			members,
+			totalMultiplier: tournamentTeamResult?.totalMultiplier ?? calculatedTotal,
+		};
+	});
+
+	const teamBracketRounds = (() => {
+		if (!isTeamTournament || teamColumns.length === 0) return [];
+
+		type BracketTeam = {
+			teamKey: string;
+			teamName: string;
+			totalMultiplier: number;
+		};
+
+		type BracketMatch = {
+			teamA: BracketTeam | null;
+			teamB: BracketTeam | null;
+			winner: BracketTeam | null;
+		};
+
+		const seededTeams: BracketTeam[] = teamColumns.map((team) => ({
+			teamKey: team.teamKey,
+			teamName: team.teamName,
+			totalMultiplier: team.totalMultiplier,
+		}));
+
+		const bracketSize = nextPowerOfTwo(seededTeams.length);
+		const bracketSlots: Array<BracketTeam | null> = [...seededTeams];
+		while (bracketSlots.length < bracketSize) bracketSlots.push(null);
+
+		const rounds: BracketMatch[][] = [];
+		let currentRoundParticipants = bracketSlots;
+
+		while (currentRoundParticipants.length > 1) {
+			const matches: BracketMatch[] = [];
+			const nextRoundParticipants: Array<BracketTeam | null> = [];
+
+			for (let i = 0; i < currentRoundParticipants.length; i += 2) {
+				const teamA = currentRoundParticipants[i] || null;
+				const teamB = currentRoundParticipants[i + 1] || null;
+				let winner: BracketTeam | null = null;
+
+				if (teamA && !teamB) winner = teamA;
+				if (!teamA && teamB) winner = teamB;
+				if (teamA && teamB) {
+					winner = teamA.totalMultiplier >= teamB.totalMultiplier ? teamA : teamB;
+				}
+
+				matches.push({ teamA, teamB, winner });
+				nextRoundParticipants.push(winner);
+			}
+
+			rounds.push(matches);
+			currentRoundParticipants = nextRoundParticipants;
+		}
+
+		return rounds;
+	})();
+
 	return (
 		<div className='relative flex flex-col min-h-screen text-white'>
 			<div
@@ -218,265 +385,464 @@ function TournamentDetailsPage() {
 			<div className='relative z-10 flex flex-col min-h-screen'>
 				<Navbar />
 				<main className='container flex-grow max-w-6xl px-4 py-8 mx-auto'>
-				<div className='flex flex-wrap items-center justify-between gap-3 mb-5'>
-					<h1 className='text-3xl font-bold'>{tournament.name}</h1>
-					<Link to='/tournaments'>
-						<Button className='bg-[#ffffff] text-black hover:bg-[#F1A82F]'>Back</Button>
-					</Link>
-				</div>
+					<div className='flex flex-wrap items-center justify-between gap-3 mb-5'>
+						<h1 className='text-3xl font-bold'>{tournament.name}</h1>
+						<Link to='/tournaments'>
+							<Button className='bg-[#ffffff] text-black hover:bg-[#F1A82F]'>Back</Button>
+						</Link>
+					</div>
 
-				<Card className='mb-5 border border-[#F1A82F] bg-[#000000]/70 backdrop-blur-sm'>
-					<CardContent className='pt-6 grid grid-cols-1 gap-2 md:grid-cols-2 text-sm text-[#f0e8d8]'>
-						<p>Status: <strong>{tournament.status}</strong></p>
-						<p>Players: {players.length}/{tournament.maxPlayers}</p>
-						<p>Prize: ${tournament.prizeAmount}</p>
-						<p>Starts: {new Date(tournament.startDate).toLocaleString()}</p>
-						<p className='md:col-span-2'>Champion: {tournament.champion?.kickUsername || "TBD"}</p>
-					</CardContent>
-				</Card>
-
-				{tournament.status === "upcoming" && !isAdmin && (
 					<Card className='mb-5 border border-[#F1A82F] bg-[#000000]/70 backdrop-blur-sm'>
-						<CardHeader>
-							<CardTitle>Join Tournament</CardTitle>
-						</CardHeader>
-						<CardContent className='space-y-3'>
-							<div>
-								<div className='mb-2 text-xs font-bold uppercase tracking-wide text-[#F1A82F]'>
-									Select Your Bracket Place
+						<CardContent className='grid grid-cols-1 gap-2 pt-6 text-sm text-[#f0e8d8] md:grid-cols-2'>
+							<p>Status: <strong>{tournament.status}</strong></p>
+							<p>Format: <strong>{isTeamTournament ? "3v3 Team Slot" : "1v1 Bracket"}</strong></p>
+							<p>Players: {players.length}/{tournament.maxPlayers}</p>
+							<p>Prize: ${tournament.prizeAmount}</p>
+							<p>Starts: {new Date(tournament.startDate).toLocaleString()}</p>
+							<p className='md:col-span-2'>
+								{isTeamTournament
+									? `Winning Team: ${tournament.winningTeamName || "TBD"}`
+									: `Champion: ${tournament.champion?.kickUsername || "TBD"}`}
+							</p>
+							{isTeamTournament && tournament.winningReason && (
+								<p className='text-[#F1A82F] md:col-span-2'>{tournament.winningReason}</p>
+							)}
+						</CardContent>
+					</Card>
+
+					{tournament.status === "upcoming" && !isAdmin && (
+						<Card className='mb-5 border border-[#F1A82F] bg-[#000000]/70 backdrop-blur-sm'>
+							<CardHeader>
+								<CardTitle>{isTeamTournament ? "Join Your Team" : "Join Tournament"}</CardTitle>
+							</CardHeader>
+							<CardContent className='space-y-3'>
+								{isTeamTournament ? (
+									<div
+										className='grid grid-cols-1 gap-3'
+										style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))" }}
+									>
+										{teamColumns.map((team) => (
+											<div key={team.teamKey} className='rounded-xl border border-[#F1A82F]/35 bg-black/40 p-3'>
+												<div className='mb-3 text-sm font-bold uppercase tracking-[0.12em] text-[#F1A82F]'>
+													{team.teamName}
+												</div>
+												<div className='space-y-2'>
+													{team.positions.map((position) => {
+														const taken = occupiedPositions.get(position);
+														const isSelected = selectedPosition === position;
+														const isTaken = Boolean(taken);
+														return (
+															<button
+																type='button'
+																key={position}
+																disabled={isTaken || isUserAlreadyJoined}
+																onClick={() => setSelectedPosition(position)}
+																className={`w-full rounded-md border px-3 py-2 text-left text-xs transition ${
+																	isTaken
+																		? "cursor-not-allowed border-[#5d5d5d] bg-[#2a2a2a] text-[#bdbdbd]"
+																		: isSelected
+																			? "border-[#ffffff] bg-[#F1A82F]/40 text-white"
+																			: "border-[#F1A82F]/40 bg-[#000000] text-[#f2f2f2] hover:bg-[#1f1f1f]"
+																}`}
+															>
+																<div className='font-bold'>Player Slot #{position}</div>
+																<div className='truncate text-[11px]'>
+																	{taken
+																		? `Taken by ${typeof taken.userId === "string" ? "Player" : taken.userId?.kickUsername || "Player"}`
+																		: "Open"}
+																</div>
+															</button>
+														);
+													})}
+												</div>
+											</div>
+										))}
+									</div>
+								) : (
+									<div>
+										<div className='mb-2 text-xs font-bold uppercase tracking-wide text-[#F1A82F]'>
+											Select Your Bracket Place
+										</div>
+										<div className='grid grid-cols-2 gap-2 md:grid-cols-4'>
+											{Array.from({ length: tournament.maxPlayers }, (_, idx) => idx + 1).map((position) => {
+												const taken = occupiedPositions.get(position);
+												const isSelected = selectedPosition === position;
+												const isTaken = Boolean(taken);
+												return (
+													<button
+														type='button'
+														key={position}
+														disabled={isTaken || isUserAlreadyJoined}
+														onClick={() => setSelectedPosition(position)}
+														className={`rounded-md border px-2 py-2 text-left text-xs transition ${
+															isTaken
+																? "cursor-not-allowed border-[#5d5d5d] bg-[#2a2a2a] text-[#bdbdbd]"
+																: isSelected
+																	? "border-[#ffffff] bg-[#F1A82F]/40 text-white"
+																	: "border-[#F1A82F]/40 bg-[#000000] text-[#f2f2f2] hover:bg-[#1f1f1f]"
+														}`}
+													>
+														<div className='font-bold'>Position #{position}</div>
+														<div className='truncate text-[11px]'>
+															{taken
+																? `Taken by ${typeof taken.userId === "string" ? "Player" : taken.userId?.kickUsername || "Player"}`
+																: "Open"}
+														</div>
+													</button>
+												);
+											})}
+										</div>
+									</div>
+								)}
+
+								<div className='grid grid-cols-1 gap-3 md:grid-cols-3'>
+									<Input
+										placeholder='Search slot game (min 2 chars)'
+										value={slotQuery}
+										onChange={(e) => setSlotQuery(e.target.value)}
+										className='border-[#F1A82F] bg-[#ffffff] text-black placeholder:text-black md:col-span-3'
+									/>
 								</div>
-								<div className='grid grid-cols-2 gap-2 md:grid-cols-4'>
-									{Array.from({ length: tournament.maxPlayers }, (_, idx) => idx + 1).map((pos) => {
-										const taken = occupiedPositions.get(pos);
-										const isSelected = selectedPosition === pos;
-										const isTaken = Boolean(taken);
+
+								<div className='grid grid-cols-1 gap-2 md:grid-cols-2'>
+									{slotSearchResults.map((slot) => {
+										const slotKey = `${slot.slotName}::${slot.provider}`.toLowerCase();
+										const isTaken = takenSlotKeys.has(slotKey);
+										const isSelected =
+											selectedSlot?.slotName === slot.slotName &&
+											selectedSlot?.provider === slot.provider;
 
 										return (
 											<button
 												type='button'
-												key={pos}
-												disabled={isTaken || isUserAlreadyJoined}
-												onClick={() => setSelectedPosition(pos)}
-												className={`rounded-md border px-2 py-2 text-left text-xs transition ${
+												key={`${slot.slotName}-${slot.provider}`}
+												disabled={isTaken}
+												onClick={() => setSelectedSlot(slot)}
+												className={`flex items-center gap-3 rounded-md border p-2 text-left transition ${
 													isTaken
 														? "cursor-not-allowed border-[#5d5d5d] bg-[#2a2a2a] text-[#bdbdbd]"
 														: isSelected
-															? "border-[#ffffff] bg-[#F1A82F]/40 text-white"
-															: "border-[#F1A82F]/40 bg-[#000000] text-[#f2f2f2] hover:bg-[#1f1f1f]"
+															? "border-[#ffffff] bg-[#F1A82F]/40"
+															: "border-[#F1A82F]/40 bg-[#111111] hover:bg-[#222222]"
 												}`}
 											>
-												<div className='font-bold'>Position #{pos}</div>
-												<div className='truncate text-[11px]'>
-													{taken
-														? `Taken by ${typeof taken.userId === "string" ? "Player" : taken.userId?.kickUsername || "Player"}`
-														: "Open"}
+												<img src={slot.image} alt={slot.name} className='object-cover w-12 h-12 rounded' />
+												<div>
+													<div className='text-sm font-semibold'>
+														{slot.name || slot.slotName}
+													</div>
+													<div className='text-xs text-[#d8d8d8]'>
+														{slot.provider}
+														{isTaken ? " • Already picked" : ""}
+													</div>
 												</div>
 											</button>
 										);
 									})}
 								</div>
-							</div>
 
-							<div className='grid grid-cols-1 gap-3 md:grid-cols-3'>
-								<Input
-									placeholder='Search slot game (min 2 chars)'
-									value={slotQuery}
-									onChange={(e) => setSlotQuery(e.target.value)}
-									className='bg-[#ffffff] text-black placeholder:text-black border-[#F1A82F] md:col-span-3'
-								/>
-							</div>
+								<Button
+									onClick={onJoin}
+									disabled={!selectedSlot || !selectedPosition || isUserAlreadyJoined}
+									className='bg-[#ffffff] text-black hover:bg-[#F1A82F]'
+								>
+									{isUserAlreadyJoined
+										? `Joined at position #${currentUserEntry?.position}`
+										: "Join Tournament"}
+								</Button>
+							</CardContent>
+						</Card>
+					)}
 
-							<div className='grid grid-cols-1 gap-2 md:grid-cols-2'>
-								{slotSearchResults.map((slot) => (
-									<button
-										type='button'
-										key={`${slot.slotName}-${slot.provider}`}
-										onClick={() => setSelectedSlot(slot)}
-										className={`flex items-center gap-3 rounded-md border p-2 text-left transition ${
-											selectedSlot?.slotName === slot.slotName
-												? "border-[#ffffff] bg-[#F1A82F]/40"
-												: "border-[#F1A82F]/40 bg-[#111111] hover:bg-[#222222]"
-										}`}
-									>
-										<img src={slot.image} alt={slot.name} className='object-cover w-12 h-12 rounded' />
-										<div>
-											<div className='text-sm font-semibold'>
-												{slot.name || slot.slotName}
-											</div>
-											<div className='text-xs text-[#d8d8d8]'>{slot.provider}</div>
-										</div>
-									</button>
+					{isAdmin && tournament.status === "upcoming" && (
+						<div className='mb-5'>
+							<Button onClick={onStart} className='bg-[#ffffff] text-black hover:bg-[#F1A82F]'>
+								Start Tournament
+							</Button>
+						</div>
+					)}
+
+					{isTeamTournament ? (
+						<div className='rounded-2xl border border-[#F1A82F]/25 bg-[#000000]/80 p-5 backdrop-blur-sm'>
+							<div className='mb-4 flex items-center gap-2 text-[#F1A82F]'>
+								<Trophy className='w-4 h-4' />
+								<span className='text-sm font-bold uppercase tracking-[0.15em]'>3v3 Team Battle</span>
+							</div>
+							<p className='mb-5 text-sm text-[#f0e8d8]'>
+								The team with the highest collective multiplier wins. If the lowest-scoring team lands the highest individual multiplier of the day, they steal the full prize.
+							</p>
+
+							<div className='mb-6 rounded-xl border border-[#F1A82F]/20 bg-[#05131f]/70 p-4'>
+								<div className='mb-3 text-xs font-bold uppercase tracking-[0.12em] text-[#F1A82F]'>
+									Team Bracket View
+								</div>
+								<div className='pb-2 overflow-x-auto'>
+									<div className='flex min-w-[760px] gap-8'>
+										{teamBracketRounds.map((roundMatches, roundIndex) => {
+											const isFinalRound = roundIndex === teamBracketRounds.length - 1;
+											return (
+												<div key={`team-round-${roundIndex}`} className='w-[240px] shrink-0'>
+													<div className='mb-3 border-b border-[#F1A82F]/20 pb-2 text-xs font-bold uppercase tracking-[0.1em] text-[#f2e7c7]'>
+														{teamRoundLabel(roundIndex, teamBracketRounds.length)}
+													</div>
+													<div className='space-y-3'>
+														{roundMatches.map((match, matchIndex) => (
+															<div key={`team-match-${roundIndex}-${matchIndex}`} className='relative'>
+																{!isFinalRound && (
+																	<div className='absolute -right-8 top-1/2 h-px w-8 -translate-y-1/2 bg-[#F1A82F]/35' />
+																)}
+																<div className='rounded-lg border border-[#F1A82F]/30 bg-[#0a2438]/85 p-2'>
+																	<div
+																		className={`mb-2 rounded-md px-2 py-1.5 text-xs ${
+																			match.winner?.teamKey === match.teamA?.teamKey
+																				? "bg-[#17452c] ring-1 ring-[#F1A82F]/40"
+																				: "bg-[#0f3048]"
+																		}`}
+																	>
+																		<div className='font-semibold text-[#fff7dd]'>
+																			{match.teamA?.teamName || "BYE"}
+																		</div>
+																		<div className='text-[11px] text-[#F1A82F]'>
+																			{match.teamA ? `${match.teamA.totalMultiplier.toFixed(2)}x` : "-"}
+																		</div>
+																	</div>
+
+																	<div
+																		className={`rounded-md px-2 py-1.5 text-xs ${
+																			match.winner?.teamKey === match.teamB?.teamKey
+																				? "bg-[#17452c] ring-1 ring-[#F1A82F]/40"
+																				: "bg-[#0f3048]"
+																		}`}
+																	>
+																		<div className='font-semibold text-[#fff7dd]'>
+																			{match.teamB?.teamName || "BYE"}
+																		</div>
+																		<div className='text-[11px] text-[#F1A82F]'>
+																			{match.teamB ? `${match.teamB.totalMultiplier.toFixed(2)}x` : "-"}
+																		</div>
+																	</div>
+																</div>
+															</div>
+														))}
+													</div>
+												</div>
+											);
+										})}
+									</div>
+								</div>
+							</div>
+							<div
+								className='grid grid-cols-1 gap-4'
+								style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}
+							>
+								{teamColumns.map((team) => (
+									<Card key={team.teamKey} className='border border-[#F1A82F]/35 bg-[#071926] text-white'>
+										<CardHeader>
+											<CardTitle className='flex items-center justify-between text-base'>
+												<span>{team.teamName}</span>
+												<span className='text-sm text-[#F1A82F]'>Total: {team.totalMultiplier.toFixed(2)}x</span>
+											</CardTitle>
+										</CardHeader>
+										<CardContent className='space-y-3'>
+											{team.members.map((player, index) => {
+												const position = team.positions[index];
+												return (
+													<div key={position} className='rounded-md border border-[#F1A82F]/20 bg-black/40 p-3'>
+														<div className='flex items-center justify-between gap-2 mb-1'>
+															<div className='text-sm font-semibold text-[#fff7dd]'>
+																{player ? playerName(player) : `Open Slot #${position}`}
+															</div>
+															<div className='text-xs text-[#F1A82F]'>
+																{player?.multiplier != null ? `${player.multiplier}x` : "-"}
+															</div>
+														</div>
+														{player ? (
+															<>
+																<p className='truncate text-xs text-[#d8d8d8]'>{player.slotDisplayName}</p>
+																{isAdmin && tournament.status === "live" && (
+																	<Input
+																		type='number'
+																		placeholder='Multiplier'
+																		value={teamMultiplierMap[player._id] ?? ""}
+																		onChange={(e) =>
+																			setTeamMultiplierMap((prev) => ({ ...prev, [player._id]: e.target.value }))
+																		}
+																		className='mt-2 border-[#F1A82F] bg-[#ffffff] text-black placeholder:text-black'
+																	/>
+																)}
+															</>
+														) : (
+															<p className='text-xs text-[#d8d8d8]'>Waiting for a player to join this team position.</p>
+														)}
+													</div>
+												);
+											})}
+										</CardContent>
+									</Card>
 								))}
 							</div>
 
-							<Button
-								onClick={onJoin}
-								disabled={!selectedSlot || !selectedPosition || isUserAlreadyJoined}
-								className='bg-[#ffffff] text-black hover:bg-[#F1A82F]'
-							>
-								{isUserAlreadyJoined
-									? `Joined at position #${currentUserEntry?.position}`
-									: "Join Tournament"}
-							</Button>
-						</CardContent>
-					</Card>
-				)}
-
-				{isAdmin && tournament.status === "upcoming" && (
-					<div className='mb-5'>
-						<Button onClick={onStart} className='bg-[#ffffff] text-black hover:bg-[#F1A82F]'>
-							Start Tournament
-						</Button>
-					</div>
-				)}
-
-				<div className='rounded-2xl border border-[#F1A82F]/25 bg-[#000000]/80 p-5 backdrop-blur-sm'>
-					<div className='mb-4 flex items-center gap-2 text-[#F1A82F]'>
-						<Trophy className='w-4 h-4' />
-						<span className='text-sm font-bold uppercase tracking-[0.15em]'>Bracket</span>
-					</div>
-
-					<div className='pb-2 overflow-x-auto'>
-						<div className='flex min-w-[900px] gap-10'>
-							{Object.entries(groupedMatches)
-								.sort((a, b) => Number(a[0]) - Number(b[0]))
-								.map(([round, matches]) => {
-									const roundNumber = Number(round);
-									const isFinalRound = roundNumber === roundsCount;
-
-									return (
-										<div key={round} className='w-[280px] shrink-0'>
-											<div className='mb-4 border-b border-[#F1A82F]/20 pb-3 text-sm font-bold uppercase tracking-[0.1em] text-[#f2e7c7]'>
-												{roundLabel(roundNumber, roundsCount)}
-											</div>
-
-											<div
-												className='flex flex-col'
-												style={{
-													paddingTop: `${getRoundTopOffset(roundNumber)}px`,
-													rowGap: `${getRoundGap(roundNumber)}px`,
-												}}
-											>
-												{matches.map((m) => {
-													const player1IsWinner =
-														m.winner && m.player1 && m.winner._id === m.player1._id;
-													const player2IsWinner =
-														m.winner && m.player2 && m.winner._id === m.player2._id;
-
-													return (
-														<div key={m._id} className='relative'>
-															{!isFinalRound && (
-																<div className='absolute -right-10 top-1/2 h-px w-10 -translate-y-1/2 bg-[#F1A82F]/35' />
-															)}
-
-															<div className='min-h-[128px] rounded-xl border border-[#F1A82F]/35 bg-[#0a2438]/85 p-2 shadow-[0_0_0_1px_rgba(241,168,47,0.08)]'>
-																<div
-																	className={`mb-2 flex items-center gap-2 rounded-md px-2 py-1.5 ${
-																		player1IsWinner
-																			? "bg-[#17452c] ring-1 ring-[#F1A82F]/40"
-																			: "bg-[#0f3048]"
-																	}`}
-																>
-																	<img
-																		src={m.player1?.slotImage || "https://via.placeholder.com/40?text=%20"}
-																		alt={m.player1?.slotDisplayName || "slot"}
-																		className='object-cover rounded h-9 w-9'
-																	/>
-																	<div className='flex-1 min-w-0'>
-																		<div className='truncate text-sm font-semibold text-[#fff7dd]'>
-																			{m.player1?.slotDisplayName || playerName(m.player1)}
-																		</div>
-																		<div className='truncate text-[11px] text-[#d8d8d8]'>
-																			{playerName(m.player1)}
-																		</div>
-																	</div>
-																	<div className='text-xs font-bold text-[#F1A82F]'>
-																		{m.multiplier1 ?? "-"}x
-																	</div>
-																</div>
-
-																<div
-																	className={`flex items-center gap-2 rounded-md px-2 py-1.5 ${
-																		player2IsWinner
-																			? "bg-[#17452c] ring-1 ring-[#F1A82F]/40"
-																			: "bg-[#0f3048]"
-																	}`}
-																>
-																	<img
-																		src={m.player2?.slotImage || "https://via.placeholder.com/40?text=%20"}
-																		alt={m.player2?.slotDisplayName || "slot"}
-																		className='object-cover rounded h-9 w-9'
-																	/>
-																	<div className='flex-1 min-w-0'>
-																		<div className='truncate text-sm font-semibold text-[#fff7dd]'>
-																			{m.player2?.slotDisplayName || playerName(m.player2)}
-																		</div>
-																		<div className='truncate text-[11px] text-[#d8d8d8]'>
-																			{playerName(m.player2)}
-																		</div>
-																	</div>
-																	<div className='text-xs font-bold text-[#F1A82F]'>
-																		{m.multiplier2 ?? "-"}x
-																	</div>
-																</div>
-
-																{isAdmin &&
-																	tournament.status === "live" &&
-																	m.status === "pending" &&
-																	m.player1 &&
-																	m.player2 && (
-																		<div className='mt-3 space-y-2 border-t border-[#F1A82F]/20 pt-3'>
-																			<div className='grid grid-cols-2 gap-2'>
-																				<Input
-																					type='number'
-																					placeholder='P1 x'
-																					value={resultsMap[m._id]?.multiplier1 || ""}
-																					onChange={(e) =>
-																						setResultsMap((prev) => ({
-																							...prev,
-																							[m._id]: {
-																								multiplier1: e.target.value,
-																								multiplier2: prev[m._id]?.multiplier2 || "",
-																							},
-																						}))
-																					}
-																					className='border-[#F1A82F] bg-[#ffffff] text-black placeholder:text-black'
-																				/>
-																				<Input
-																					type='number'
-																					placeholder='P2 x'
-																					value={resultsMap[m._id]?.multiplier2 || ""}
-																					onChange={(e) =>
-																						setResultsMap((prev) => ({
-																							...prev,
-																							[m._id]: {
-																								multiplier1: prev[m._id]?.multiplier1 || "",
-																								multiplier2: e.target.value,
-																							},
-																						}))
-																					}
-																					className='border-[#F1A82F] bg-[#ffffff] text-black placeholder:text-black'
-																				/>
-																			</div>
-																			<Button
-																				onClick={() => onSubmitResult(m._id)}
-																				className='w-full bg-[#ffffff] text-black hover:bg-[#F1A82F]'
-																			>
-																				Submit Result
-																			</Button>
-																		</div>
-																	)}
-															</div>
-														</div>
-													);
-												})}
-											</div>
-										</div>
-									);
-								})}
+							{isAdmin && tournament.status === "live" && (
+								<div className='mt-5'>
+									<Button
+										onClick={onSubmitTeamResults}
+										disabled={players.length !== tournament.maxPlayers}
+										className='bg-[#ffffff] text-black hover:bg-[#F1A82F]'
+									>
+										Finalize 3v3 Results
+									</Button>
+								</div>
+							)}
 						</div>
-					</div>
-				</div>
+					) : (
+						<div className='rounded-2xl border border-[#F1A82F]/25 bg-[#000000]/80 p-5 backdrop-blur-sm'>
+							<div className='mb-4 flex items-center gap-2 text-[#F1A82F]'>
+								<Trophy className='w-4 h-4' />
+								<span className='text-sm font-bold uppercase tracking-[0.15em]'>Bracket</span>
+							</div>
+
+							<div className='pb-2 overflow-x-auto'>
+								<div className='flex min-w-[900px] gap-10'>
+									{Object.entries(groupedMatches)
+										.sort((a, b) => Number(a[0]) - Number(b[0]))
+										.map(([round, matches]) => {
+											const roundNumber = Number(round);
+											const isFinalRound = roundNumber === roundsCount;
+
+											return (
+												<div key={round} className='w-[280px] shrink-0'>
+													<div className='mb-4 border-b border-[#F1A82F]/20 pb-3 text-sm font-bold uppercase tracking-[0.1em] text-[#f2e7c7]'>
+														{roundLabel(roundNumber, roundsCount)}
+													</div>
+
+													<div
+														className='flex flex-col'
+														style={{
+															paddingTop: `${getRoundTopOffset(roundNumber)}px`,
+															rowGap: `${getRoundGap(roundNumber)}px`,
+														}}
+													>
+														{matches.map((match) => {
+															const player1IsWinner =
+																match.winner && match.player1 && match.winner._id === match.player1._id;
+															const player2IsWinner =
+																match.winner && match.player2 && match.winner._id === match.player2._id;
+
+															return (
+																<div key={match._id} className='relative'>
+																	{!isFinalRound && (
+																		<div className='absolute -right-10 top-1/2 h-px w-10 -translate-y-1/2 bg-[#F1A82F]/35' />
+																	)}
+
+																	<div className='min-h-[128px] rounded-xl border border-[#F1A82F]/35 bg-[#0a2438]/85 p-2 shadow-[0_0_0_1px_rgba(241,168,47,0.08)]'>
+																		<div
+																			className={`mb-2 flex items-center gap-2 rounded-md px-2 py-1.5 ${
+																				player1IsWinner
+																					? "bg-[#17452c] ring-1 ring-[#F1A82F]/40"
+																					: "bg-[#0f3048]"
+																			}`}
+																		>
+																			<img
+																				src={match.player1?.slotImage || "https://via.placeholder.com/40?text=%20"}
+																				alt={match.player1?.slotDisplayName || "slot"}
+																				className='object-cover rounded h-9 w-9'
+																			/>
+																			<div className='flex-1 min-w-0'>
+																				<div className='truncate text-sm font-semibold text-[#fff7dd]'>
+																					{match.player1?.slotDisplayName || playerName(match.player1)}
+																				</div>
+																				<div className='truncate text-[11px] text-[#d8d8d8]'>
+																					{playerName(match.player1)}
+																				</div>
+																			</div>
+																			<div className='text-xs font-bold text-[#F1A82F]'>
+																				{match.multiplier1 ?? "-"}x
+																			</div>
+																		</div>
+
+																		<div
+																			className={`flex items-center gap-2 rounded-md px-2 py-1.5 ${
+																				player2IsWinner
+																					? "bg-[#17452c] ring-1 ring-[#F1A82F]/40"
+																					: "bg-[#0f3048]"
+																			}`}
+																		>
+																			<img
+																				src={match.player2?.slotImage || "https://via.placeholder.com/40?text=%20"}
+																				alt={match.player2?.slotDisplayName || "slot"}
+																				className='object-cover rounded h-9 w-9'
+																			/>
+																			<div className='flex-1 min-w-0'>
+																				<div className='truncate text-sm font-semibold text-[#fff7dd]'>
+																					{match.player2?.slotDisplayName || playerName(match.player2)}
+																				</div>
+																				<div className='truncate text-[11px] text-[#d8d8d8]'>
+																					{playerName(match.player2)}
+																				</div>
+																			</div>
+																			<div className='text-xs font-bold text-[#F1A82F]'>
+																				{match.multiplier2 ?? "-"}x
+																			</div>
+																		</div>
+
+																		{isAdmin &&
+																			tournament.status === "live" &&
+																			match.status === "pending" &&
+																			match.player1 &&
+																			match.player2 && (
+																				<div className='mt-3 space-y-2 border-t border-[#F1A82F]/20 pt-3'>
+																					<div className='grid grid-cols-2 gap-2'>
+																						<Input
+																							type='number'
+																							placeholder='P1 x'
+																							value={resultsMap[match._id]?.multiplier1 || ""}
+																							onChange={(e) =>
+																								setResultsMap((prev) => ({
+																									...prev,
+																									[match._id]: {
+																										multiplier1: e.target.value,
+																										multiplier2: prev[match._id]?.multiplier2 || "",
+																									},
+																								}))
+																							}
+																							className='border-[#F1A82F] bg-[#ffffff] text-black placeholder:text-black'
+																						/>
+																						<Input
+																							type='number'
+																							placeholder='P2 x'
+																							value={resultsMap[match._id]?.multiplier2 || ""}
+																							onChange={(e) =>
+																								setResultsMap((prev) => ({
+																									...prev,
+																									[match._id]: {
+																										multiplier1: prev[match._id]?.multiplier1 || "",
+																										multiplier2: e.target.value,
+																									},
+																								}))
+																							}
+																							className='border-[#F1A82F] bg-[#ffffff] text-black placeholder:text-black'
+																						/>
+																					</div>
+																					<Button
+																						onClick={() => onSubmitResult(match._id)}
+																						className='w-full bg-[#ffffff] text-black hover:bg-[#F1A82F]'
+																					>
+																						Submit Result
+																					</Button>
+																				</div>
+																		)}
+																	</div>
+																</div>
+														);
+													})}
+												</div>
+											</div>
+										);
+									})}
+								</div>
+							</div>
+						</div>
+					)}
 				</main>
 				<Footer />
 			</div>

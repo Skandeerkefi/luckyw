@@ -7,7 +7,7 @@ export const PreviousLeaderboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const prizes = [500, 300, 150]; // Top 3 prizes
+  const prizes = [600, 350, 250]; // Top 3 prizes
   const medals = ["🥇", "🥈", "🥉"]; // Medals
 
   useEffect(() => {

@@ -6,6 +6,7 @@ const API_BASES = [
 ];
 
 export type TournamentStatus = "upcoming" | "live" | "finished";
+export type TournamentFormat = "1v1" | "3v3";
 
 export interface SlotSearchItem {
 	name: string;
@@ -17,22 +18,40 @@ export interface SlotSearchItem {
 export interface Tournament {
 	_id: string;
 	name: string;
+	format: TournamentFormat;
 	slotGameName: string;
 	prizeAmount: number;
-	maxPlayers: 8 | 16;
+	maxPlayers: number;
+	teamSize?: number;
+	teamCount?: number;
+	teamNames?: string[];
+	winningTeamName?: string | null;
+	winningReason?: string | null;
+	stealTriggered?: boolean;
+	teamResults?: TeamResult[];
 	status: TournamentStatus;
 	startDate: string;
 	joinedPlayers?: number;
 	champion?: { kickUsername?: string } | null;
 }
 
+export interface TeamResult {
+	teamKey: string;
+	teamName: string;
+	totalMultiplier: number;
+	highestMultiplier: number;
+	highestMultiplierPlayerId?: string | null;
+}
+
 export interface TournamentPlayer {
 	_id: string;
 	position: number;
+	teamKey?: string | null;
 	slotName: string;
 	slotDisplayName: string;
 	provider: string;
 	slotImage: string;
+	multiplier?: number | null;
 	isEliminated?: boolean;
 	userId?: { _id?: string; kickUsername?: string } | string;
 }
@@ -53,9 +72,17 @@ export interface TournamentHistoryItem {
 	_id: string;
 	tournamentId?: string;
 	name: string;
+	format?: TournamentFormat;
 	slotGameName?: string;
 	prizeAmount: number;
 	maxPlayers: number;
+	teamSize?: number;
+	teamCount?: number;
+	teamNames?: string[];
+	winningTeamName?: string | null;
+	winningReason?: string | null;
+	stealTriggered?: boolean;
+	teamResults?: TeamResult[];
 	startDate?: string;
 	finishedAt: string;
 	championKickUsername?: string | null;
@@ -65,10 +92,12 @@ export interface TournamentHistoryItem {
 		userId?: string;
 		kickUsername?: string | null;
 		position: number;
+		teamKey?: string | null;
 		slotName: string;
 		slotDisplayName: string;
 		provider: string;
 		slotImage: string;
+		multiplier?: number | null;
 		isEliminated?: boolean;
 		eliminatedInRound?: number | null;
 	}>;
@@ -132,7 +161,9 @@ interface CreateTournamentPayload {
 	name: string;
 	slotGameName: string;
 	prizeAmount: number;
-	maxPlayers: 8 | 16;
+	maxPlayers: number;
+	format: TournamentFormat;
+	teamCount?: number;
 	startDate: string;
 }
 
@@ -147,6 +178,13 @@ interface JoinTournamentPayload {
 interface SubmitResultPayload {
 	multiplier1: number;
 	multiplier2: number;
+}
+
+interface SubmitTeamResultsPayload {
+	results: Array<{
+		playerId: string;
+		multiplier: number;
+	}>;
 }
 
 interface TournamentState {
@@ -165,6 +203,7 @@ interface TournamentState {
 	joinTournament: (tournamentId: string, payload: JoinTournamentPayload) => Promise<void>;
 	startTournament: (tournamentId: string) => Promise<void>;
 	submitMatchResult: (matchId: string, payload: SubmitResultPayload) => Promise<void>;
+	submitTeamResults: (tournamentId: string, payload: SubmitTeamResultsPayload) => Promise<void>;
 	deleteTournament: (tournamentId: string) => Promise<void>;
 }
 
@@ -287,6 +326,16 @@ export const useTournamentStore = create<TournamentState>((set, get) => ({
 			await get().fetchTournamentById(details.tournament._id);
 			await get().fetchTournaments();
 		}
+	},
+
+	submitTeamResults: async (tournamentId, payload) => {
+		await request(`/api/tournaments/${tournamentId}/team-results`, {
+			method: "POST",
+			headers: getAuthHeaders(),
+			body: JSON.stringify(payload),
+		});
+		await get().fetchTournamentById(tournamentId);
+		await get().fetchTournaments();
 	},
 
 	deleteTournament: async (tournamentId) => {

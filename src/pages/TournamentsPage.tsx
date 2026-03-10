@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useTournamentStore } from "@/store/useTournamentStore";
+import type { TournamentFormat } from "@/store/useTournamentStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,8 +24,10 @@ function TournamentsPage() {
 	const [createOpen, setCreateOpen] = useState(false);
 	const [form, setForm] = useState({
 		name: "",
+		format: "1v1" as TournamentFormat,
 		prizeAmount: 100,
-		maxPlayers: 8 as 8 | 16,
+		maxPlayers: 8,
+		teamCount: 3,
 		startDate: "",
 	});
 
@@ -59,16 +62,23 @@ function TournamentsPage() {
 			await createTournament({
 				...form,
 				name: form.name.trim(),
-				slotGameName: `${form.name} Slots`,
+				slotGameName:
+					form.format === "3v3"
+						? `${form.name.trim()} 3v3 Team Slots`
+						: `${form.name.trim()} Slots`,
 				startDate: startDateToSend,
 				prizeAmount: Number(form.prizeAmount),
+				maxPlayers: form.format === "3v3" ? form.teamCount * 3 : form.maxPlayers,
+				teamCount: form.format === "3v3" ? form.teamCount : undefined,
 			});
 			toast({ title: "Tournament created" });
 			setCreateOpen(false);
 			setForm({
 				name: "",
+				format: "1v1",
 				prizeAmount: 100,
 				maxPlayers: 8,
+				teamCount: 3,
 				startDate: "",
 			});
 		} catch (err: unknown) {
@@ -146,6 +156,20 @@ function TournamentsPage() {
 								onChange={(e) => setForm({ ...form, name: e.target.value })}
 								className='bg-[#ffffff] text-black placeholder:text-black border-[#F1A82F]'
 							/>
+							<select
+								value={form.format}
+								onChange={(e) =>
+									setForm({
+										...form,
+										format: e.target.value as TournamentFormat,
+										maxPlayers: e.target.value === "3v3" ? form.teamCount * 3 : 8,
+									})
+								}
+								className='h-9 rounded-md border border-[#F1A82F] bg-[#ffffff] px-3 text-black md:col-span-1'
+							>
+								<option value='1v1'>1v1 Tournament</option>
+								<option value='3v3'>3v3 Team Slot Tournament</option>
+							</select>
 							<Input
 								type='number'
 								placeholder='Prize Amount'
@@ -155,16 +179,39 @@ function TournamentsPage() {
 								}
 								className='bg-[#ffffff] text-black placeholder:text-black border-[#F1A82F]'
 							/>
-							<select
-								value={form.maxPlayers}
-								onChange={(e) =>
-									setForm({ ...form, maxPlayers: Number(e.target.value) as 8 | 16 })
-								}
-								className='h-9 rounded-md border border-[#F1A82F] bg-[#ffffff] px-3 text-black md:col-span-1'
-							>
-								<option value={8}>8 Players</option>
-								<option value={16}>16 Players</option>
-							</select>
+							{form.format === "1v1" ? (
+								<select
+									value={form.maxPlayers}
+									onChange={(e) =>
+										setForm({
+											...form,
+											maxPlayers: Number(e.target.value),
+										})
+									}
+									className='h-9 rounded-md border border-[#F1A82F] bg-[#ffffff] px-3 text-black md:col-span-1'
+								>
+									<option value={8}>8 Players</option>
+									<option value={16}>16 Players</option>
+								</select>
+							) : (
+								<div className='grid grid-cols-2 gap-2 md:col-span-1'>
+									<Input
+										type='number'
+										min={2}
+										max={12}
+										placeholder='Teams'
+										value={form.teamCount}
+										onChange={(e) => {
+											const teams = Math.max(2, Math.min(12, Number(e.target.value) || 2));
+											setForm({ ...form, teamCount: teams, maxPlayers: teams * 3 });
+										}}
+										className='bg-[#ffffff] text-black placeholder:text-black border-[#F1A82F]'
+									/>
+									<div className='flex h-9 items-center rounded-md border border-[#F1A82F] bg-[#ffffff] px-3 text-black'>
+										{form.maxPlayers} Players ({form.teamCount} teams x 3)
+									</div>
+								</div>
+							)}
 							<Input
 								type='datetime-local'
 								value={form.startDate}
@@ -189,8 +236,10 @@ function TournamentsPage() {
 							</CardHeader>
 							<CardContent className='space-y-2 text-sm text-[#f0e8d8]'>
 								<p>Status: <span className='font-semibold'>{t.status}</span></p>
+								<p>Format: {t.format === "3v3" ? "3v3 Team Slot" : "1v1 Bracket"}</p>
 								<p>Players: {t.joinedPlayers || 0}/{t.maxPlayers}</p>
 								<p>Prize: ${t.prizeAmount}</p>
+								{t.winningTeamName && <p>Winning Team: {t.winningTeamName}</p>}
 								<p>Starts: {new Date(t.startDate).toLocaleString()}</p>
 								<div className='flex gap-2 pt-2'>
 									<Link to={`/tournaments/${t._id}`}>
