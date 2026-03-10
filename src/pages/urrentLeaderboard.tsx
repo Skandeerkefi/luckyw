@@ -54,6 +54,12 @@ export const CurrentLeaderboard = () => {
         <span className="text-[#F1A82F]">{period.end}</span>
       </p>
 
+      {leaderboard?.disclosure && (
+        <p className="mb-8 text-center text-sm text-white/70 max-w-4xl mx-auto">
+          {leaderboard.disclosure}
+        </p>
+      )}
+
       {/* Podium */}
       <div className="grid items-end grid-cols-3 gap-8 mb-8">
         {podiumOrder.map((player) => {

@@ -10,8 +10,8 @@ const LeaderboardPage: React.FC = () => {
     const { leaderboard, loading, error, fetchLeaderboard } = useRoobetStore();
 
     useEffect(() => {
-        fetchLeaderboard();
-    }, []);
+        fetchLeaderboard("monthly");
+    }, [fetchLeaderboard]);
 
     const [timeLeft, setTimeLeft] = useState("");
 
@@ -169,8 +169,13 @@ const LeaderboardPage: React.FC = () => {
                         </div>
 
                         <p className='text-sm bg-[#efae0e]/10 p-3 rounded-lg border-l-4 border-[#efae0e]'>
-                            Only Slots and House games count (Dice excluded)
+                            Only Slots and Provably Fair (house games) count, Dice is excluded.
                         </p>
+                        {leaderboard?.disclosure && (
+                            <p className='text-xs bg-[#efae0e]/10 p-3 rounded-lg border border-[#efae0e]/20'>
+                                {leaderboard.disclosure}
+                            </p>
+                        )}
                     </CardContent>
                 </Card>
 

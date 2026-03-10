@@ -1,9 +1,7 @@
 import React from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Twitch, Twitter, Disc, Music2, Video } from "lucide-react";
 import { CurrentLeaderboard } from "./urrentLeaderboard";
 import { PreviousLeaderboard } from "./PreviousLeaderboard";
 
@@ -241,7 +239,7 @@ const HomePage = () => {
         🎯 RTP ≤ 97% → <span className="text-[#F1A82F]">100% weight</span>
       </p>
       <p className="text-2xl font-bold text-white">
-        🎯 RTP ≥ 97% → <span className="text-[#F1A82F]">50% weight</span>
+        🎯 RTP &gt; 97% → <span className="text-[#F1A82F]">50% weight</span>
       </p>
       <p className="text-2xl font-bold text-white">
         🎯 RTP ≥ 98% → <span className="text-[#F1A82F]">10% weight</span>
@@ -249,7 +247,7 @@ const HomePage = () => {
     </div>
 
     <p className="mt-6 text-white/60">
-      These weights prevent leaderboard abuse and ensure fair competition.
+      Only Slots and Provably Fair (house games) count, and Dice is excluded.
     </p>
   </div>
 </section>
