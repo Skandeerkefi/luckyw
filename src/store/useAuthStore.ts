@@ -4,6 +4,7 @@ interface User {
 	id: string;
 	kickUsername: string;
 	rainbetUsername: string; // add this
+	discordUsername?: string;
 	role: string; // "user" or "admin"
 }
 
@@ -24,6 +25,7 @@ interface AuthState {
 	signup: (
 		kickUsername: string,
 		rainbetUsername: string,
+		discordUsername: string,
 		password: string,
 		confirmPassword: string
 	) => Promise<boolean>;
@@ -31,6 +33,23 @@ interface AuthState {
 	logout: () => void;
 	loadFromStorage: () => void;
 }
+
+const API_BASES = [
+	"http://localhost:3000",
+	"https://luckywdata-production.up.railway.app",
+];
+
+const fetchWithBaseFallback = async (path: string, options: RequestInit) => {
+	let lastError: unknown;
+	for (const base of API_BASES) {
+		try {
+			return await fetch(`${base}${path}`, options);
+		} catch (error) {
+			lastError = error;
+		}
+	}
+	throw lastError;
+};
 
 export const useAuthStore = create<AuthState>((set, get) => ({
 	user: null,
@@ -43,15 +62,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 	login: async (kickUsername, password) => {
 		try {
-			const res = await fetch(
-				"https://kingdata-vez1.onrender.com/api/auth/login",
-				// "https://pnpplxprssdata.onrender.com/api/auth/login",
-				{
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ kickUsername, password }),
-				}
-			);
+			const res = await fetchWithBaseFallback("/api/auth/login", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ kickUsername, password }),
+			});
 
 			if (!res.ok) {
 				const data = await res.json();
@@ -70,29 +85,35 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 			localStorage.setItem("user", JSON.stringify(data.user));
 
 			return { success: true };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error("❌ Login error:", error);
-			return { success: false, error: error.message };
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Login failed",
+			};
 		}
 	},
 
-	signup: async (kickUsername, rainbetUsername, password, confirmPassword) => {
+	signup: async (
+		kickUsername,
+		rainbetUsername,
+		discordUsername,
+		password,
+		confirmPassword
+	) => {
 		set({ isLoading: true });
 		try {
-			const res = await fetch(
-				// "https://pnpplxprssdata.onrender.com/api/auth/register",
-				"https://kingdata-vez1.onrender.com/api/auth/register",
-				{
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({
-						kickUsername,
-						rainbetUsername,
-						password,
-						confirmPassword,
-					}),
-				}
-			);
+			const res = await fetchWithBaseFallback("/api/auth/register", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					kickUsername,
+					rainbetUsername,
+					discordUsername,
+					password,
+					confirmPassword,
+				}),
+			});
 
 			if (!res.ok) {
 				const data = await res.json();
@@ -101,9 +122,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 			set({ isLoading: false });
 			return true;
-		} catch (error: any) {
+		} catch (error: unknown) {
 			set({ isLoading: false });
-			throw error;
+			throw error instanceof Error ? error : new Error("Signup failed");
 		}
 	},
 

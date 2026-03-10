@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Clock, Users, Gift } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
 
 export type GiveawayStatus = "active" | "completed" | "upcoming";
 
@@ -10,7 +9,6 @@ interface GiveawayCardProps {
 	prize: string;
 	endTime: string;
 	participants: number;
-	maxParticipants?: number;
 	status: GiveawayStatus;
 	isEntered?: boolean;
 	onEnter?: (id: string) => void;
@@ -22,29 +20,23 @@ export function GiveawayCard({
 	prize,
 	endTime,
 	participants,
-	maxParticipants = 100,
 	status,
 	isEntered = false,
 	onEnter,
 }: GiveawayCardProps) {
-	const participationPercentage = Math.min(
-		100,
-		Math.floor((participants / maxParticipants) * 100)
-	);
-
 	return (
-		<div className='overflow-hidden rounded-lg border border-[#E10600] bg-[#000000]'>
+		<div className='overflow-hidden rounded-lg border border-[#F1A82F] bg-[#000000]'>
 			{/* Accent top bar */}
-			<div className='h-3 bg-gradient-to-r from-[#E10600] via-[#ff2a2a] to-[#ff5555]' />
+			<div className='h-3 bg-gradient-to-r from-[#F1A82F] via-[#F1A82F] to-[#ff5555]' />
 
 			<div className='p-5 text-[#FFFFFF]'>
 				<div className='flex items-start justify-between'>
-					<h3 className='text-lg font-bold text-[#E10600]'>{title}</h3>
+					<h3 className='text-lg font-bold text-[#F1A82F]'>{title}</h3>
 					<StatusPill status={status} />
 				</div>
 
 				<div className='flex items-center gap-2 mt-4'>
-					<Gift className='w-5 h-5 text-[#E10600]' />
+					<Gift className='w-5 h-5 text-[#F1A82F]' />
 					<span className='text-lg font-semibold'>{prize}</span>
 				</div>
 
@@ -52,29 +44,19 @@ export function GiveawayCard({
 					<div className='flex justify-between text-sm text-[#D3D3D3]'>
 						<div className='flex items-center gap-1.5'>
 							<Users className='w-4 h-4' />
-							<span>{participants} participants</span>
+							<span>{participants} joined</span>
 						</div>
 						<div className='flex items-center gap-1.5'>
 							<Clock className='w-4 h-4' />
 							<span>{endTime}</span>
 						</div>
 					</div>
-
-					<Progress
-						value={participationPercentage}
-						className='h-2 bg-[#D3D3D3]'
-						color='#E10600'
-					/>
-
-					<div className='text-xs text-right text-[#D3D3D3]'>
-						{participants} / {maxParticipants} entries
-					</div>
 				</div>
 
 				<div className='mt-4'>
 					{status === "active" && !isEntered && (
 						<Button
-							className='w-full bg-[#E10600] hover:bg-[#ff2a2a] text-[#FFFFFF]'
+							className='w-full bg-[#F1A82F] hover:bg-[#F1A82F] text-[#FFFFFF]'
 							onClick={() => onEnter && onEnter(id)}
 						>
 							Enter Giveaway
@@ -84,7 +66,7 @@ export function GiveawayCard({
 					{status === "active" && isEntered && (
 						<Button
 							variant='outline'
-							className='w-full text-[#E10600] border-[#E10600]'
+							className='w-full text-[#F1A82F] border-[#F1A82F]'
 							disabled
 						>
 							Entered
@@ -119,7 +101,7 @@ export function GiveawayCard({
 function StatusPill({ status }: { status: GiveawayStatus }) {
 	if (status === "active") {
 		return (
-			<div className='px-2 py-0.5 rounded-full bg-[#E10600]/20 text-[#E10600] text-xs'>
+			<div className='px-2 py-0.5 rounded-full bg-[#F1A82F]/20 text-[#F1A82F] text-xs'>
 				Active
 			</div>
 		);

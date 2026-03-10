@@ -17,11 +17,11 @@ import { useAuthStore } from "@/store/useAuthStore";
 import { Link, useNavigate } from "react-router-dom";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import GraphicalBackground from "@/components/GraphicalBackground";
 
 function SignupPage() {
 	const [username, setUsername] = useState("");
 	const [rainbetUsername, setRainbetUsername] = useState("");
+	const [discordUsername, setDiscordUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 	const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -33,7 +33,7 @@ function SignupPage() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
-		if (!username || !rainbetUsername || !password || !confirmPassword) return;
+		if (!username || !rainbetUsername || !discordUsername || !password || !confirmPassword) return;
 
 		if (password !== confirmPassword) {
 			setPasswordError("Passwords do not match");
@@ -46,6 +46,7 @@ function SignupPage() {
 			const success = await signup(
 				username,
 				rainbetUsername,
+				discordUsername,
 				password,
 				confirmPassword
 			);
@@ -56,10 +57,12 @@ function SignupPage() {
 				});
 				navigate("/login");
 			}
-		} catch (error: any) {
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error ? error.message : "Unexpected error occurred.";
 			toast({
 				title: "Signup Failed",
-				description: error.message || "Unexpected error occurred.",
+				description: errorMessage,
 				variant: "destructive",
 			});
 		}
@@ -67,14 +70,19 @@ function SignupPage() {
 
 	return (
 		<div className='relative flex flex-col min-h-screen'>
-			{/* Background Layer */}
-			<div className='absolute inset-0 -z-10'>
-				<GraphicalBackground />
-			</div>
+			<div
+				className='fixed inset-0 z-0 bg-center bg-no-repeat bg-contain opacity-44'
+				style={{
+					backgroundImage: "url('https://i.ibb.co/2YNrPKrD/3dgifmaker96052.gif)",
+					backgroundColor: "#000",
+				}}
+			/>
+			<div className='fixed inset-0 z-0 bg-gradient-to-b from-black/80 via-black/90 to-black' />
 
-			<Navbar />
+			<div className='relative z-10 flex flex-col min-h-screen'>
+				<Navbar />
 
-			<main className='container flex items-center justify-center flex-grow py-12'>
+				<main className='container flex items-center justify-center flex-grow py-12'>
 				<Card className='w-full max-w-md bg-white/90 border border-[#E0E0E0] text-[#000000] shadow-md rounded-xl backdrop-blur-md'>
 					<CardHeader className='space-y-1'>
 						<div className='flex items-center justify-center gap-2 mb-2'>
@@ -109,13 +117,27 @@ function SignupPage() {
 							{/* Rainbet Username */}
 							<div className='space-y-2'>
 								<Label htmlFor='rainbetUsername' className='text-[#000000]'>
-									Rainbet Username
+									Roobet Username
 								</Label>
 								<Input
 									id='rainbetUsername'
-									placeholder='Enter your Rainbet username'
+									placeholder='Enter your Roobet username'
 									value={rainbetUsername}
 									onChange={(e) => setRainbetUsername(e.target.value)}
+									required
+									className='bg-white border border-[#E0E0E0] text-[#000000] placeholder:text-[#999999]'
+								/>
+							</div>
+
+							<div className='space-y-2'>
+								<Label htmlFor='discordUsername' className='text-[#000000]'>
+									Discord Username
+								</Label>
+								<Input
+									id='discordUsername'
+									placeholder='Enter your Discord username'
+									value={discordUsername}
+									onChange={(e) => setDiscordUsername(e.target.value)}
 									required
 									className='bg-white border border-[#E0E0E0] text-[#000000] placeholder:text-[#999999]'
 								/>
@@ -212,9 +234,10 @@ function SignupPage() {
 						</CardFooter>
 					</form>
 				</Card>
-			</main>
+				</main>
 
-			<Footer />
+				<Footer />
+			</div>
 		</div>
 	);
 }

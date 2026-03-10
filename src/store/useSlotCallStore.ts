@@ -13,6 +13,23 @@ export interface SlotCall {
 	bonusCall?: { name: string; createdAt: string };
 }
 
+const API_BASES = [
+	"http://localhost:3000",
+	"https://luckywdata-production.up.railway.app",
+];
+
+const fetchWithBaseFallback = async (path: string, options: RequestInit) => {
+	let lastError: unknown;
+	for (const base of API_BASES) {
+		try {
+			return await fetch(`${base}${path}`, options);
+		} catch (error) {
+			lastError = error;
+		}
+	}
+	throw lastError;
+};
+
 interface SlotCallState {
 	slotCalls: SlotCall[];
 	isSubmitting: boolean;
@@ -42,18 +59,15 @@ export const useSlotCallStore = create<SlotCallState>((set, get) => ({
 
 		set({ isSubmitting: true });
 		try {
-			const res = await fetch(
-				"https://kingdata-vez1.onrender.com/api/slot-calls",
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify({ name: slotName }),
-					credentials: "include",
-				}
-			);
+			const res = await fetchWithBaseFallback("/api/slot-calls", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({ name: slotName }),
+				credentials: "include",
+			});
 
 			if (!res.ok) {
 				const data = await res.json();
@@ -80,9 +94,12 @@ export const useSlotCallStore = create<SlotCallState>((set, get) => ({
 			}));
 
 			return { success: true };
-		} catch (error: any) {
+		} catch (error: unknown) {
 			set({ isSubmitting: false });
-			return { success: false, error: error.message };
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Failed to add slot call",
+			};
 		}
 	},
 
@@ -91,18 +108,15 @@ export const useSlotCallStore = create<SlotCallState>((set, get) => ({
 		if (!token) return { success: false, error: "Not authenticated" };
 
 		try {
-			const res = await fetch(
-				`https://kingdata-vez1.onrender.com/api/slot-calls/${id}/bonus-call`,
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify({ name: slotName }),
-					credentials: "include",
-				}
-			);
+			const res = await fetchWithBaseFallback(`/api/slot-calls/${id}/bonus-call`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({ name: slotName }),
+				credentials: "include",
+			});
 
 			if (!res.ok) {
 				const data = await res.json();
@@ -116,8 +130,11 @@ export const useSlotCallStore = create<SlotCallState>((set, get) => ({
 				),
 			}));
 			return { success: true };
-		} catch (error: any) {
-			return { success: false, error: error.message };
+		} catch (error: unknown) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Failed to submit bonus call",
+			};
 		}
 	},
 
@@ -126,18 +143,15 @@ export const useSlotCallStore = create<SlotCallState>((set, get) => ({
 		if (!token) return { success: false, error: "Not authenticated" };
 
 		try {
-			const res = await fetch(
-				`https://kingdata-vez1.onrender.com/api/slot-calls/${id}/status`,
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify({ status, x250Hit }),
-					credentials: "include",
-				}
-			);
+			const res = await fetchWithBaseFallback(`/api/slot-calls/${id}/status`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify({ status, x250Hit }),
+				credentials: "include",
+			});
 
 			if (!res.ok) {
 				const data = await res.json();
@@ -158,8 +172,14 @@ export const useSlotCallStore = create<SlotCallState>((set, get) => ({
 				),
 			}));
 			return { success: true };
-		} catch (error: any) {
-			return { success: false, error: error.message };
+		} catch (error: unknown) {
+			return {
+				success: false,
+				error:
+					error instanceof Error
+						? error.message
+						: "Failed to update slot call status",
+			};
 		}
 	},
 
@@ -168,16 +188,13 @@ export const useSlotCallStore = create<SlotCallState>((set, get) => ({
 		if (!token) return { success: false, error: "Not authenticated" };
 
 		try {
-			const res = await fetch(
-				`https://kingdata-vez1.onrender.com/api/slot-calls/${id}`,
-				{
-					method: "DELETE",
-					headers: {
-						Authorization: `Bearer ${token}`,
-					},
-					credentials: "include",
-				}
-			);
+			const res = await fetchWithBaseFallback(`/api/slot-calls/${id}`, {
+				method: "DELETE",
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+				credentials: "include",
+			});
 
 			if (!res.ok) {
 				const data = await res.json();
@@ -188,8 +205,11 @@ export const useSlotCallStore = create<SlotCallState>((set, get) => ({
 			await get().fetchSlotCalls();
 
 			return { success: true };
-		} catch (error: any) {
-			return { success: false, error: error.message };
+		} catch (error: unknown) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : "Failed to delete slot call",
+			};
 		}
 	},
 
@@ -198,13 +218,10 @@ export const useSlotCallStore = create<SlotCallState>((set, get) => ({
 		const userRole = useAuthStore.getState().user?.role;
 		if (!token) return;
 
-		const url =
-			userRole === "admin"
-				? "https://kingdata-vez1.onrender.com/api/slot-calls"
-				: "https://kingdata-vez1.onrender.com/api/slot-calls/my";
+		const path = userRole === "admin" ? "/api/slot-calls" : "/api/slot-calls/my";
 
 		try {
-			const res = await fetch(url, {
+			const res = await fetchWithBaseFallback(path, {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},

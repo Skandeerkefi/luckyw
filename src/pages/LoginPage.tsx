@@ -16,7 +16,6 @@ import { LogIn } from "lucide-react";
 import { useAuthStore } from "@/store/useAuthStore";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import GraphicalBackground from "@/components/GraphicalBackground";
 
 function LoginPage() {
 	const [username, setUsername] = useState("");
@@ -49,15 +48,20 @@ function LoginPage() {
 	};
 
 	return (
-		<div className='relative flex flex-col min-h-screen  text-[#000000]'>
-			{/* Background Canvas */}
-			<div className='fixed inset-0 -z-10'>
-				<GraphicalBackground />
-			</div>
+		<div className='relative flex flex-col min-h-screen text-[#000000]'>
+			<div
+				className='fixed inset-0 z-0 bg-center bg-no-repeat bg-contain opacity-44'
+				style={{
+					backgroundImage: "url('https://i.ibb.co/2YNrPKrD/3dgifmaker96052.gif)",
+					backgroundColor: "#000",
+				}}
+			/>
+			<div className='fixed inset-0 z-0 bg-gradient-to-b from-black/80 via-black/90 to-black' />
 
-			<Navbar />
+			<div className='relative z-10 flex flex-col min-h-screen'>
+				<Navbar />
 
-			<main className='container relative z-10 flex items-center justify-center flex-grow py-12'>
+				<main className='container flex items-center justify-center flex-grow py-12'>
 				<Card className='w-full max-w-md bg-[#F5F5F5] border border-[#E0E0E0] text-[#000000] shadow-md rounded-xl'>
 					<CardHeader className='space-y-1'>
 						<div className='flex items-center justify-center gap-2 mb-2'>
@@ -130,9 +134,10 @@ function LoginPage() {
 						</CardFooter>
 					</form>
 				</Card>
-			</main>
+				</main>
 
-			<Footer />
+				<Footer />
+			</div>
 		</div>
 	);
 }

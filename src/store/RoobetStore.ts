@@ -1,6 +1,11 @@
 import { create } from "zustand";
 import axios from "axios";
 
+const API_BASES = [
+  "http://localhost:3000",
+  "https://luckywdata-production.up.railway.app",
+];
+
 interface Player {
   uid: string;
   username: string;
@@ -8,6 +13,14 @@ interface Player {
   favoriteGameId: string;
   favoriteGameTitle: string;
   rankLevel: number;
+}
+
+interface LeaderboardApiPlayer {
+  uid?: string;
+  username?: string;
+  weightedWagered?: number;
+  favoriteGameId?: string;
+  favoriteGameTitle?: string;
 }
 
 interface LeaderboardData {
@@ -96,31 +109,49 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
       const period =
         type === "monthly" ? getCurrentMonthlyPeriod() : getCurrentBiweekly();
 
-      const url = `https://luckywdata-production.up.railway.app/api/leaderboard/${period.start}/${period.end}`;
+      let response = null;
+      let lastError: unknown;
+      for (const base of API_BASES) {
+        try {
+          response = await axios.get(
+            `${base}/api/leaderboard/${period.start}/${period.end}`,
+            { timeout: 8000 }
+          );
+          break;
+        } catch (error) {
+          lastError = error;
+        }
+      }
 
-      const response = await axios.get(url, { timeout: 8000 });
+      if (!response) {
+        throw lastError instanceof Error
+          ? lastError
+          : new Error("Failed to fetch leaderboard from all API bases");
+      }
 
       if (!response.data || !response.data.data)
         throw new Error("Invalid API response");
 
       const updated: LeaderboardData = {
         disclosure: response.data.disclosure,
-        data: response.data.data.map((p: any, i: number) => ({
-          uid: p.uid,
-          username: p.username,
-          weightedWagered: p.weightedWagered,
-          favoriteGameId: p.favoriteGameId,
-          favoriteGameTitle: p.favoriteGameTitle,
+        data: response.data.data.map((p: LeaderboardApiPlayer, i: number) => ({
+          uid: p.uid || "",
+          username: p.username || "",
+          weightedWagered: Number(p.weightedWagered || 0),
+          favoriteGameId: p.favoriteGameId || "",
+          favoriteGameTitle: p.favoriteGameTitle || "",
           rankLevel: i + 1,
         })),
       };
 
       set({ leaderboard: updated, loading: false });
-    } catch (err: any) {
+    } catch (err: unknown) {
       let msg = "Failed to fetch leaderboard";
-      if (err.response?.status === 429) msg = "Too many requests — wait a bit.";
-      if (err.response?.status === 500) msg = "Server error — try again later.";
-      if (err.code === "ECONNABORTED") msg = "Request timed out.";
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 429) msg = "Too many requests — wait a bit.";
+        if (err.response?.status === 500) msg = "Server error — try again later.";
+        if (err.code === "ECONNABORTED") msg = "Request timed out.";
+      }
 
       set({ error: msg, loading: false });
     }

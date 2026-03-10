@@ -5,13 +5,17 @@ import RoobetPage from "@/pages/RoobetPage";
 import OffersPage from "@/pages/OffersPage";
 import RulesPage from "@/pages/RulesPage";
 import SocialsPage from "@/pages/SocialsPage";
-
+import LoginPage from "@/pages/LoginPage";
+import SignupPage from "@/pages/SignupPage";
 import PreviousLeaderboardPage from "@/pages/PreviousLeaderboardPage";
-
+import SlotCallsPage from "@/pages/SlotCallsPage";
+import TournamentsPage from "@/pages/TournamentsPage";
+import TournamentDetailsPage from "@/pages/TournamentDetailsPage";
+import TournamentHistoryPage from "@/pages/TournamentHistoryPage";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/store/useAuthStore";
-
+import GiveawaysPage from "./pages/GiveawaysPage";
 function App() {
   const loadFromStorage = useAuthStore((state) => state.loadFromStorage);
   const user = useAuthStore((state) => state.user);
@@ -44,6 +48,13 @@ function App() {
           {/* Roobet page */}
           <Route path='/Leaderboard' element={<RoobetPage />} />
           <Route path='/RoobetPage' element={<RoobetPage />} />
+          <Route path='/login' element={<LoginPage />} />
+          <Route path='/signup' element={<SignupPage />} />
+          <Route path='/slot' element={<SlotCallsPage />} />
+          <Route path='/giveaways' element={<GiveawaysPage />} />
+          <Route path='/tournaments' element={<TournamentsPage />} />
+          <Route path='/tournaments/:id' element={<TournamentDetailsPage />} />
+          <Route path='/tournaments/history' element={<TournamentHistoryPage />} />
         </Routes>
       </BrowserRouter>
       <Toaster />
