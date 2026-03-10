@@ -3,6 +3,7 @@ import axios from "axios";
 
 const API_BASES = [
   "https://luckywdata-production.up.railway.app",
+  "http://localhost:3000",
 ];
 
 interface Player {
@@ -35,20 +36,20 @@ interface RoobetStore {
 }
 
 /* ────────────────────────────────────────────────
-   MONTHLY PERIOD  (fixed: Dec 8 → Jan 8)
-   ──────────────────────────────────────────────── */
+  MONTHLY PERIOD  (fixed first cycle: 2026-03-10 -> 2026-04-10)
+  ──────────────────────────────────────────────── */
 export function getCurrentMonthlyPeriod() {
   const now = new Date();
 
-  const firstStart = new Date(Date.UTC(2025, 0, 9, 0, 0, 0));
-  const firstEnd = new Date(Date.UTC(2025, 1, 9, 23, 59, 59));
+  const firstStart = new Date(Date.UTC(2026, 2, 10, 0, 0, 0));
+  const firstEnd = new Date(Date.UTC(2026, 3, 9, 23, 59, 59));
 
   let start: Date;
   let endInclusive: Date;
 
   if (now <= firstEnd) {
     start = firstStart;
-    endInclusive = new Date(Date.UTC(2025, 1, 9));
+    endInclusive = new Date(Date.UTC(2026, 3, 9));
   } else {
     const year = now.getUTCFullYear();
     const month = now.getUTCMonth();
@@ -58,7 +59,7 @@ export function getCurrentMonthlyPeriod() {
       start = new Date(Date.UTC(year, month, 10));
       endInclusive = new Date(Date.UTC(year, month + 1, 9));
     } else {
-      start = new Date(Date.UTC(year, month - 1, 9));
+      start = new Date(Date.UTC(year, month - 1, 10));
       endInclusive = new Date(Date.UTC(year, month, 9));
     }
   }

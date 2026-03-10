@@ -6,18 +6,18 @@ export const CurrentLeaderboard = () => {
 
   // Fetch once (safe for strict mode)
   useEffect(() => {
-    fetchLeaderboard();
+    fetchLeaderboard("monthly");
   }, [fetchLeaderboard]);
 
   const period = useMemo(() => getCurrentMonthlyPeriod(), []);
 
   // Monthly prizes
-  const prizes = [500, 300, 150];
+  const prizes = [650, 350, 250];
   const medals = ["🥇", "🥈", "🥉"];
 
   if (loading)
     return (
-      <p className="text-center text-white/70 text-lg">
+      <p className="text-lg text-center text-white/70">
         Loading leaderboard…
       </p>
     );
@@ -48,14 +48,14 @@ export const CurrentLeaderboard = () => {
   return (
     <div className="max-w-5xl mx-auto">
       {/* Period */}
-      <p className="text-white/50 text-center mb-8 text-lg">
+      <p className="mb-8 text-lg text-center text-white/50">
         Period:{" "}
         <span className="text-[#F1A82F]">{period.start}</span> →{" "}
         <span className="text-[#F1A82F]">{period.end}</span>
       </p>
 
       {/* Podium */}
-      <div className="grid grid-cols-3 gap-8 items-end mb-8">
+      <div className="grid items-end grid-cols-3 gap-8 mb-8">
         {podiumOrder.map((player) => {
           // Determine real rank (0 = 🥇)
           const rankIndex = topPlayers.findIndex(p => p.uid === player.uid);
@@ -90,7 +90,7 @@ export const CurrentLeaderboard = () => {
               </div>
 
               {/* Wagered */}
-              <div className="text-white/80 mb-4">
+              <div className="mb-4 text-white/80">
                 {Number(player.weightedWagered).toLocaleString()} Wagered
               </div>
 
@@ -113,7 +113,7 @@ export const CurrentLeaderboard = () => {
       </div>
 
       {/* CTA */}
-      <div className="text-center mt-6">
+      <div className="mt-6 text-center">
         <button
           onClick={() => (window.location.href = "/Leaderboard")}
           className="relative px-8 py-3 rounded-xl font-bold text-black
