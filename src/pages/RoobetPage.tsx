@@ -32,8 +32,8 @@ const prizeByRank: Record<number, string> = {
    Monthly Label (12/8 → 1/8)
    ─────────────────────────────── */
 function formatMonthlyRange(range: { startDate: string; endDate: string }) {
-  const s = new Date(`${range.startDate}T12:00:00.000Z`);
-  const e = new Date(`${range.endDate}T12:00:00.000Z`);
+  const s = new Date(`${range.startDate}T00:00:00.000Z`);
+  const e = new Date(`${range.endDate}T00:00:00.000Z`);
 
   return `${s.getUTCMonth() + 1}/${s.getUTCDate()}-${e.getUTCMonth() + 1}/${e.getUTCDate()} Monthly Edition 🏆`;
 }
@@ -59,7 +59,7 @@ function getCurrentRange() {
   const start =
     day >= 10
       ? new Date(Date.UTC(year, month, 10, 0, 0, 0, 0))
-      : new Date(Date.UTC(year, month - 1, 10, 23, 59, 59, 0));
+      : new Date(Date.UTC(year, month - 1, 10, 0, 0, 0, 0));
 
   const endExclusive = new Date(start);
   endExclusive.setUTCMonth(endExclusive.getUTCMonth() + 1);
@@ -97,7 +97,7 @@ const RoobetPage: React.FC = () => {
   useEffect(() => {
     const tick = () => {
       const { endDate } = getCurrentRange();
-      const endTime = new Date(`${endDate}T00:00:00Z`).getTime();
+      const endTime = new Date(`${endDate}T12:00:00Z`).getTime();
       const diff = Math.max(0, endTime - Date.now());
       const total = Math.floor(diff / 1000);
 
