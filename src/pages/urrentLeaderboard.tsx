@@ -61,7 +61,7 @@ export const CurrentLeaderboard = () => {
       try {
         const { start, end } = getCurrentMonthlyPeriod();
         const response = await axios.get(
-          `http://localhost:3000/api/leaderboard/${start}/${end}`
+          `https://luckywdata-production.up.railway.app/api/leaderboard/${start}/${end}`
         );
         setLeaderboard(response.data);
       } catch (err: unknown) {
