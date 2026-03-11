@@ -6,11 +6,36 @@ import { Badge } from "@/components/ui/badge";
 import { useRoobetStore } from "../store/RoobetStore";
 import GraphicalBackground from "@/components/GraphicalBackground";
 
+function toDateOnlyUtc(d: Date) {
+    return d.toISOString().split("T")[0];
+}
+
+function getCurrentRange() {
+    const now = new Date();
+    const year = now.getUTCFullYear();
+    const month = now.getUTCMonth();
+    const day = now.getUTCDate();
+
+    const start =
+        day >= 10
+            ? new Date(Date.UTC(year, month, 10, 0, 0, 0, 0))
+            : new Date(Date.UTC(year, month - 1, 10, 0, 0, 0, 0));
+
+    const endExclusive = new Date(start);
+    endExclusive.setUTCMonth(endExclusive.getUTCMonth() + 1);
+
+    return {
+        startDate: toDateOnlyUtc(start),
+        endDate: toDateOnlyUtc(endExclusive),
+    };
+}
+
 const LeaderboardPage: React.FC = () => {
     const { leaderboard, loading, error, fetchLeaderboard } = useRoobetStore();
 
     useEffect(() => {
-        fetchLeaderboard("monthly");
+        const { startDate, endDate } = getCurrentRange();
+        fetchLeaderboard(startDate, endDate);
     }, [fetchLeaderboard]);
 
     const [timeLeft, setTimeLeft] = useState("");
@@ -18,9 +43,9 @@ const LeaderboardPage: React.FC = () => {
     useEffect(() => {
         const updateTimer = () => {
             const now = new Date();
-            const year = now.getFullYear();
-            const month = now.getMonth();
-            const endOfMonth = new Date(year, month + 1, 1, 0, 0, 0);
+            const year = now.getUTCFullYear();
+            const month = now.getUTCMonth();
+            const endOfMonth = new Date(Date.UTC(year, month + 1, 1, 0, 0, 0, 0));
             const diff = endOfMonth.getTime() - now.getTime();
 
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -190,6 +215,7 @@ const LeaderboardPage: React.FC = () => {
                             {new Date().toLocaleString("default", {
                                 month: "long",
                                 year: "numeric",
+                                timeZone: "UTC",
                             })}
                         </p>
                         <p className='text-[#efae0e] text-sm font-semibold mt-1'>

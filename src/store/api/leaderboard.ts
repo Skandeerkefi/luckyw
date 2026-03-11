@@ -5,21 +5,39 @@ const API_URL = "https://services.rainbet.com/v1/external/affiliates";
 
 function getDateRange(period: "weekly" | "monthly") {
   const now = new Date();
-  const endDate = new Date(now);
-  endDate.setHours(23, 59, 59, 999);
+  const endDate = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      23,
+      59,
+      59,
+      999
+    )
+  );
 
   if (period === "weekly") {
-    const startDate = new Date(now);
-    startDate.setDate(now.getDate() - 7);
-    startDate.setHours(0, 0, 0, 0);
+    const startDate = new Date(
+      Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() - 7,
+        0,
+        0,
+        0,
+        0
+      )
+    );
 
     return {
       start_at: startDate.toISOString().split("T")[0],
       end_at: endDate.toISOString().split("T")[0],
     };
   } else {
-    const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-    startDate.setHours(0, 0, 0, 0);
+    const startDate = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0)
+    );
 
     return {
       start_at: startDate.toISOString().split("T")[0],

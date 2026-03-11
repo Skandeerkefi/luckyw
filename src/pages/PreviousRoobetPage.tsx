@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRoobetStore } from "../store/RoobetStore";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -29,7 +29,7 @@ const prizeByRank: Record<number, string> = {
 };
 
 /* ───────────────────────────────
-   Monthly Label (12/8 → 1/8)
+   Monthly Label
    ─────────────────────────────── */
 function formatMonthlyRange(range: { startDate: string; endDate: string }) {
   const s = new Date(`${range.startDate}T12:00:00.000Z`);
@@ -50,69 +50,47 @@ function maskUsername(username: string): string {
   return first + asterisks + last;
 }
 
-function getCurrentRange() {
+function getPreviousRange() {
   const now = new Date();
   const year = now.getUTCFullYear();
   const month = now.getUTCMonth();
   const day = now.getUTCDate();
 
-  const start =
+  // Current range starts on day 10
+  const currentStart =
     day >= 10
       ? new Date(Date.UTC(year, month, 10, 0, 0, 0, 0))
       : new Date(Date.UTC(year, month - 1, 10, 23, 59, 59, 0));
 
-  const endExclusive = new Date(start);
-  endExclusive.setUTCMonth(endExclusive.getUTCMonth() + 1);
+  // Previous ends 1 day before current starts
+  const previousEnd = new Date(currentStart);
+  previousEnd.setUTCDate(previousEnd.getUTCDate() - 1);
+
+  // Previous starts 1 month before current starts, then subtract 1 day
+  const previousStart = new Date(currentStart);
+  previousStart.setUTCMonth(previousStart.getUTCMonth() - 1);
+  previousStart.setUTCDate(previousStart.getUTCDate() - 1);
 
   return {
-    startDate: toDateOnlyUtc(start),
-    endDate: toDateOnlyUtc(endExclusive),
+    startDate: toDateOnlyUtc(previousStart),
+    endDate: toDateOnlyUtc(previousEnd),
   };
 }
 
-const RoobetPage: React.FC = () => {
+const PreviousRoobetPage: React.FC = () => {
   const { leaderboard, loading, error, fetchLeaderboard } = useRoobetStore();
 
   const [showHowItWorks, setShowHowItWorks] = useState(false);
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
 
-  const currentRange = getCurrentRange();
-  const monthlyLabel = formatMonthlyRange(currentRange);
+  const previousRange = getPreviousRange();
+  const monthlyLabel = formatMonthlyRange(previousRange);
 
   /* ───────────────────────────────
      Fetch leaderboard
      ─────────────────────────────── */
   useEffect(() => {
-    fetchLeaderboard(currentRange.startDate, currentRange.endDate);
-  }, [fetchLeaderboard, currentRange.startDate, currentRange.endDate]);
-
-  /* ───────────────────────────────
-     Countdown to monthly end
-     ─────────────────────────────── */
-  useEffect(() => {
-    const tick = () => {
-      const { endDate } = getCurrentRange();
-      const endTime = new Date(`${endDate}T00:00:00Z`).getTime();
-      const diff = Math.max(0, endTime - Date.now());
-      const total = Math.floor(diff / 1000);
-
-      setTimeLeft({
-        days: Math.floor(total / 86400),
-        hours: Math.floor((total % 86400) / 3600),
-        minutes: Math.floor((total % 3600) / 60),
-        seconds: total % 60,
-      });
-    };
-
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    fetchLeaderboard(previousRange.startDate, previousRange.endDate);
+  }, [fetchLeaderboard, previousRange.startDate, previousRange.endDate]);
 
   const topPlayers = leaderboard?.data?.slice(0, 15) ?? [];
 
@@ -133,23 +111,10 @@ const RoobetPage: React.FC = () => {
 
         <main className="flex-grow w-full px-6 py-12 mx-auto text-center max-w-7xl">
           <h1 className="text-4xl md:text-5xl font-extrabold text-[#F1A82F] mb-2">
-            💰 $2,000 MONTHLY LEADERBOARD 💰
+            💰 $2,000 PREVIOUS MONTHLY LEADERBOARD 💰
           </h1>
 
           <p className="text-[#F1A82F]/80 mb-8 text-lg">{monthlyLabel}</p>
-
-          {/* Timer */}
-          <div className="mb-8">
-            <h3 className="text-2xl text-[#F1A82F] font-bold mb-2">
-              Leaderboard Ends In
-            </h3>
-            <div className="flex justify-center gap-4 text-2xl font-extrabold text-[#F9B97C]">
-              <TimerBox label="Days" value={timeLeft.days} />
-              <TimerBox label="Hours" value={timeLeft.hours} />
-              <TimerBox label="Minutes" value={timeLeft.minutes} />
-              <TimerBox label="Seconds" value={timeLeft.seconds} />
-            </div>
-          </div>
 
           {/* Buttons */}
           <div className="flex items-center justify-center gap-4 mb-10">
@@ -222,17 +187,15 @@ const RoobetPage: React.FC = () => {
                           {maskUsername(p.username)}
                         </td>
 
-                        <td className="p-4 text-right text-[#F1A82F]/80">
+                        <td className="p-4 text-right font-mono text-[#F9B97C]">
                           ${Number(p.weightedWagered).toLocaleString(undefined, {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2,
-})}
-
-
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </td>
 
-                        <td className="p-4 text-right font-semibold text-[#F9B97C]">
-                          {prizeByRank[r] ?? "$0"}
+                        <td className="p-4 text-right font-bold text-[#F1A82F]">
+                          {prizeByRank[r] || "-"}
                         </td>
                       </tr>
                     );
@@ -244,7 +207,7 @@ const RoobetPage: React.FC = () => {
             !loading &&
             !error && (
               <p className="text-[#F1A82F]/70 mb-12">
-                No players yet this period.
+                No players in this period.
               </p>
             )
           )}
@@ -270,7 +233,7 @@ const RoobetPage: React.FC = () => {
               Games with an RTP of <strong>97% or less</strong> contribute <strong>100%</strong> of the amount wagered.
             </p>
             <p>
-              Games with an RTP <strong>above 97% and below 98%</strong> contribute <strong>50%</strong> of the amount wagered.
+              Games with an RTP <strong>above 97%</strong> contribute <strong>50%</strong> of the amount wagered.
             </p>
             <p>
               Games with an RTP of <strong>98% and above</strong> contribute <strong>10%</strong> of the amount wagered.
@@ -285,14 +248,4 @@ const RoobetPage: React.FC = () => {
   );
 };
 
-/* ───────────────────────────────
-   Timer Box
-   ─────────────────────────────── */
-const TimerBox = ({ label, value }: { label: string; value: number }) => (
-  <div className="flex flex-col items-center bg-[#F1A82F]/10 px-4 py-2 rounded-xl">
-    <span className="text-3xl">{String(value).padStart(2, "0")}</span>
-    <span className="text-xs uppercase text-[#F1A82F]/70">{label}</span>
-  </div>
-);
-
-export default RoobetPage;
+export default PreviousRoobetPage;

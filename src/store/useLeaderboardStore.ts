@@ -25,12 +25,12 @@ const getDateRange = (
 	period: LeaderboardPeriod
 ): { start_at: string; end_at: string } => {
 	const now = new Date();
+	const year = now.getUTCFullYear();
+	const month = now.getUTCMonth();
 
 	// Monthly: start at first day of month, end at last day of month
-	const startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-	const endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-	startDate.setHours(0, 0, 0, 0);
-	endDate.setHours(23, 59, 59, 999);
+	const startDate = new Date(Date.UTC(year, month, 1, 0, 0, 0, 0));
+	const endDate = new Date(Date.UTC(year, month + 1, 0, 23, 59, 59, 999));
 
 	return {
 		start_at: startDate.toISOString().split("T")[0],

@@ -3,7 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
 import { CurrentLeaderboard } from "./urrentLeaderboard";
-import { PreviousLeaderboard } from "./PreviousLeaderboard";
+import { PreviousLeaderboard } from "./PreviousLeaderboardCard";
 
 const HomePage = () => {
   return (
@@ -328,16 +328,15 @@ const HomePage = () => {
 
   <CurrentLeaderboard />
 </section>
+
 {/* PREVIOUS LEADERBOARD */}
-<section className="py-24 px-6 bg-black/60 backdrop-blur-xl border-t border-[#F1A82F]/20">
+<section className="px-6 py-24 bg-black/30 backdrop-blur-xl border-t border-[#F1A82F]/20">
   <h2 className="text-5xl text-center font-extrabold text-[#F1A82F] mb-14">
-    Previous Leaderboard 🕒
+    Previous Leaderboard 📊
   </h2>
 
   <PreviousLeaderboard />
 </section>
-
-
 {/* STREAM */}
         <section className="px-8 py-20 text-center">
           <motion.h2

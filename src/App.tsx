@@ -2,12 +2,12 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "@/pages/HomePage";
 import RoobetPage from "@/pages/RoobetPage";
+import PreviousRoobetPage from "@/pages/PreviousRoobetPage";
 import OffersPage from "@/pages/OffersPage";
 import RulesPage from "@/pages/RulesPage";
 import SocialsPage from "@/pages/SocialsPage";
 import LoginPage from "@/pages/LoginPage";
 import SignupPage from "@/pages/SignupPage";
-import PreviousLeaderboardPage from "@/pages/PreviousLeaderboardPage";
 import SlotCallsPage from "@/pages/SlotCallsPage";
 import TournamentsPage from "@/pages/TournamentsPage";
 import TournamentDetailsPage from "@/pages/TournamentDetailsPage";
@@ -43,10 +43,9 @@ function App() {
           <Route path='/rules' element={<RulesPage />} />
           <Route path='/socials' element={<SocialsPage />} />
           
-          <Route path='/previous' element={<PreviousLeaderboardPage />} />
-
           {/* Roobet page */}
           <Route path='/Leaderboard' element={<RoobetPage />} />
+          <Route path='/PreviousLeaderboard' element={<PreviousRoobetPage />} />
           <Route path='/RoobetPage' element={<RoobetPage />} />
           <Route path='/login' element={<LoginPage />} />
           <Route path='/signup' element={<SignupPage />} />

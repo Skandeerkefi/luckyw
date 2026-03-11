@@ -55,8 +55,8 @@ export function Navbar() {
   ];
 
   const leaderboardLinks = [
-    { path: "/Leaderboard", name: "Current" },
-    { path: "/previous", name: "Previous" },
+    { path: "/Leaderboard", name: "Current Leaderboard" },
+    { path: "/PreviousLeaderboard", name: "Previous Leaderboard" },
   ];
 
   const isLeaderboardActive = leaderboardLinks.some(

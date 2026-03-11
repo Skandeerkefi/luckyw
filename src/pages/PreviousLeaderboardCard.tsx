@@ -28,27 +28,33 @@ function toDateOnlyUtc(d: Date) {
   return d.toISOString().split("T")[0];
 }
 
-function getCurrentMonthlyPeriod() {
+function getPreviousMonthlyPeriod() {
   const now = new Date();
   const year = now.getUTCFullYear();
   const month = now.getUTCMonth();
   const day = now.getUTCDate();
 
-  const start =
+  // Current range starts on day 10
+  const currentStart =
     day >= 10
       ? new Date(Date.UTC(year, month, 10, 0, 0, 0, 0))
       : new Date(Date.UTC(year, month - 1, 10, 0, 0, 0, 0));
 
-  const endExclusive = new Date(start);
-  endExclusive.setUTCMonth(endExclusive.getUTCMonth() + 1);
+  // Previous ends 1 day before current starts
+  const previousEnd = new Date(currentStart);
+  previousEnd.setUTCDate(previousEnd.getUTCDate() - 1);
+
+  // Previous starts 1 month before current starts
+  const previousStart = new Date(currentStart);
+  previousStart.setUTCMonth(previousStart.getUTCMonth() - 1);
 
   return {
-    start: toDateOnlyUtc(start),
-    end: toDateOnlyUtc(endExclusive),
+    start: toDateOnlyUtc(previousStart),
+    end: toDateOnlyUtc(previousEnd),
   };
 }
 
-export const CurrentLeaderboard = () => {
+export const PreviousLeaderboard = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,13 +65,13 @@ export const CurrentLeaderboard = () => {
       setLoading(true);
       setError(null);
       try {
-        const { start, end } = getCurrentMonthlyPeriod();
+        const { start, end } = getPreviousMonthlyPeriod();
         const response = await axios.get(
           `http://localhost:3000/api/leaderboard/${start}/${end}`
         );
         setLeaderboard(response.data);
       } catch (err: unknown) {
-        let errorMessage = "Failed to fetch leaderboard";
+        let errorMessage = "Failed to fetch previous leaderboard";
         if (axios.isAxiosError(err)) {
           errorMessage = err.response?.data?.error || err.message;
         } else if (err instanceof Error) {
@@ -80,7 +86,7 @@ export const CurrentLeaderboard = () => {
     fetchData();
   }, []);
 
-  const period = useMemo(() => getCurrentMonthlyPeriod(), []);
+  const period = useMemo(() => getPreviousMonthlyPeriod(), []);
 
   // Monthly prizes
   const prizes = [650, 350, 250];
@@ -89,7 +95,7 @@ export const CurrentLeaderboard = () => {
   if (loading)
     return (
       <p className="text-lg text-center text-white/70">
-        Loading leaderboard…
+        Loading previous leaderboard…
       </p>
     );
 
@@ -103,7 +109,7 @@ export const CurrentLeaderboard = () => {
   if (!leaderboard?.data?.length)
     return (
       <p className="text-center text-white/60">
-        No leaderboard data available.
+        No previous leaderboard data available.
       </p>
     );
 
@@ -186,15 +192,12 @@ export const CurrentLeaderboard = () => {
       {/* CTA */}
       <div className="mt-6 text-center">
         <button
-          onClick={() => (window.location.href = "/Leaderboard")}
+          onClick={() => (window.location.href = "/PreviousLeaderboard")}
           className="relative px-8 py-3 rounded-xl font-bold text-black
-          bg-gradient-to-r from-[#F1A82F] to-[#FFD700]
-          shadow-[0_0_15px_rgba(241,168,47,0.7)]
-          hover:shadow-[0_0_25px_rgba(241,168,47,1)]
-          transition-all duration-300"
-        >
-          <span className="relative z-10">See Full Leaderboard</span>
-          <span className="absolute inset-0 rounded-xl bg-yellow-400/20 blur-xl animate-pulse -z-10" />
+            bg-gradient-to-r from-[#F1A82F] to-[#FFD700]
+            hover:from-[#FFD700] hover:to-[#F1A82F]
+            transition-all duration-300 shadow-lg hover:shadow-[0_0_25px_rgba(241,168,47,0.8)]">
+          View Full Previous Leaderboard
         </button>
       </div>
     </div>
