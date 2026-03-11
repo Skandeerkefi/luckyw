@@ -41,7 +41,7 @@ type WagerDebugEntry = {
 };
 
 const API_BASES = [
-	"https://luckywdata-production.up.railway.app",
+	"http://localhost:3000",
 ];
 
 const withApiFallback = async <T>(request: (base: string) => Promise<T>) => {
