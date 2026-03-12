@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useRoobetStore } from "../store/RoobetStore";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -56,20 +56,20 @@ function getPreviousRange() {
   const month = now.getUTCMonth();
   const day = now.getUTCDate();
 
-  // Current range starts on day 10
   const currentStart =
     day >= 10
       ? new Date(Date.UTC(year, month, 10, 0, 0, 0, 0))
-      : new Date(Date.UTC(year, month - 1, 10, 23, 59, 59, 0));
+      : new Date(Date.UTC(year, month - 1, 10, 0, 0, 0, 0));
 
-  // Previous ends 1 day before current starts
-  const previousEnd = new Date(currentStart);
-  previousEnd.setUTCDate(previousEnd.getUTCDate() - 1);
+  const currentEnd = new Date(currentStart);
+  currentEnd.setUTCMonth(currentEnd.getUTCMonth() + 1);
 
-  // Previous starts 1 month before current starts, then subtract 1 day
   const previousStart = new Date(currentStart);
   previousStart.setUTCMonth(previousStart.getUTCMonth() - 1);
   previousStart.setUTCDate(previousStart.getUTCDate() - 1);
+
+  const previousEnd = new Date(currentStart);
+  previousEnd.setUTCDate(previousEnd.getUTCDate() - 1);
 
   return {
     startDate: toDateOnlyUtc(previousStart),
@@ -78,19 +78,20 @@ function getPreviousRange() {
 }
 
 const PreviousRoobetPage: React.FC = () => {
-  const { leaderboard, loading, error, fetchLeaderboard } = useRoobetStore();
+  const { leaderboard, loading, error, fetchPreviousLeaderboard } =
+    useRoobetStore();
 
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
-  const previousRange = getPreviousRange();
+  const previousRange = useMemo(() => getPreviousRange(), []);
   const monthlyLabel = formatMonthlyRange(previousRange);
 
   /* ───────────────────────────────
      Fetch leaderboard
      ─────────────────────────────── */
   useEffect(() => {
-    fetchLeaderboard(previousRange.startDate, previousRange.endDate);
-  }, [fetchLeaderboard, previousRange.startDate, previousRange.endDate]);
+    fetchPreviousLeaderboard(previousRange.startDate, previousRange.endDate);
+  }, [fetchPreviousLeaderboard, previousRange.startDate, previousRange.endDate]);
 
   const topPlayers = leaderboard?.data?.slice(0, 15) ?? [];
 

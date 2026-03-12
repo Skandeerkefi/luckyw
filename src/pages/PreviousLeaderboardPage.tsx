@@ -16,22 +16,36 @@ function toDateOnlyUtc(d: Date) {
   return d.toISOString().split("T")[0];
 }
 
-function getPreviousRange() {
+function getCurrentRange() {
   const now = new Date();
   const year = now.getUTCFullYear();
   const month = now.getUTCMonth();
   const day = now.getUTCDate();
 
-  const currentStart =
+  const start =
     day >= 10
       ? new Date(Date.UTC(year, month, 10, 0, 0, 0, 0))
       : new Date(Date.UTC(year, month - 1, 10, 0, 0, 0, 0));
 
+  const end = new Date(start);
+  end.setUTCMonth(end.getUTCMonth() + 1);
+
+  return {
+    startDate: toDateOnlyUtc(start),
+    endDate: toDateOnlyUtc(end),
+  };
+}
+
+function getPreviousRange() {
+  const { startDate } = getCurrentRange();
+  const currentStart = new Date(`${startDate}T12:00:00.000Z`);
+
+  const previousStart = new Date(currentStart);
+  previousStart.setUTCMonth(previousStart.getUTCMonth() - 1);
+  previousStart.setUTCDate(previousStart.getUTCDate() - 1);
+
   const previousEnd = new Date(currentStart);
   previousEnd.setUTCDate(previousEnd.getUTCDate() - 1);
-
-  const previousStart = new Date(previousEnd);
-  previousStart.setUTCMonth(previousStart.getUTCMonth() - 1);
 
   return {
     startDate: toDateOnlyUtc(previousStart),
@@ -61,15 +75,15 @@ const formatRangeLabel = () => {
 };
 
 const PreviousLeaderboardPage: React.FC = () => {
-  const { leaderboard, loading, error, fetchLeaderboard } = useRoobetStore();
+  const { leaderboard, loading, error, fetchPreviousLeaderboard } = useRoobetStore();
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
   const label = useMemo(() => formatRangeLabel(), []);
 
   useEffect(() => {
     const { startDate, endDate } = getPreviousRange();
-    fetchLeaderboard(startDate, endDate);
-  }, [fetchLeaderboard]);
+    fetchPreviousLeaderboard(startDate, endDate);
+  }, [fetchPreviousLeaderboard]);
 
   const players = leaderboard?.data?.slice(0, 10) || [];
 
@@ -129,7 +143,7 @@ const PreviousLeaderboardPage: React.FC = () => {
                     return (
                       <tr key={player.uid} className="border-t border-[#F9B97C]/20 hover:bg-[#F9B97C]/10 transition">
                         <td className="p-4 text-center">#{rank}</td>
-                        <td className="p-4 text-center font-semibold">{player.username}</td>
+                        <td className="p-4 font-semibold text-center">{player.username}</td>
                         <td className="p-4 text-right text-[#F1A82F]/80">
                           {Number(player.weightedWagered).toLocaleString(undefined, {
                             minimumFractionDigits: 2,
