@@ -1,8 +1,7 @@
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import HomePage from "@/pages/HomePage";
 import RoobetPage from "@/pages/RoobetPage";
-import PreviousRoobetPage from "@/pages/PreviousRoobetPage";
 import OffersPage from "@/pages/OffersPage";
 import RulesPage from "@/pages/RulesPage";
 import SocialsPage from "@/pages/SocialsPage";
@@ -45,7 +44,7 @@ function App() {
           
           {/* Roobet page */}
           <Route path='/Leaderboard' element={<RoobetPage />} />
-          <Route path='/PreviousLeaderboard' element={<PreviousRoobetPage />} />
+          <Route path='/PreviousLeaderboard' element={<Navigate to='/Leaderboard' replace />} />
           <Route path='/RoobetPage' element={<RoobetPage />} />
           <Route path='/login' element={<LoginPage />} />
           <Route path='/signup' element={<SignupPage />} />

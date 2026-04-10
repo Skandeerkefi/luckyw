@@ -32,8 +32,8 @@ const prizeByRank: Record<number, string> = {
    Monthly Label
    ─────────────────────────────── */
 function formatMonthlyRange(range: { startDate: string; endDate: string }) {
-  const s = new Date(`${range.startDate}T12:00:00.000Z`);
-  const e = new Date(`${range.endDate}T12:00:00.000Z`);
+  const s = new Date(`${range.startDate}T00:00:00.000Z`);
+  const e = new Date(`${range.endDate}T00:00:00.000Z`);
 
   return `${s.getUTCMonth() + 1}/${s.getUTCDate()}-${e.getUTCMonth() + 1}/${e.getUTCDate()} Monthly Edition 🏆`;
 }
@@ -54,22 +54,8 @@ function getPreviousRange() {
   const now = new Date();
   const year = now.getUTCFullYear();
   const month = now.getUTCMonth();
-  const day = now.getUTCDate();
-
-  const currentStart =
-    day >= 10
-      ? new Date(Date.UTC(year, month, 10, 0, 0, 0, 0))
-      : new Date(Date.UTC(year, month - 1, 10, 0, 0, 0, 0));
-
-  const currentEnd = new Date(currentStart);
-  currentEnd.setUTCMonth(currentEnd.getUTCMonth() + 1);
-
-  const previousStart = new Date(currentStart);
-  previousStart.setUTCMonth(previousStart.getUTCMonth() - 1);
-  previousStart.setUTCDate(previousStart.getUTCDate() - 1);
-
-  const previousEnd = new Date(currentStart);
-  previousEnd.setUTCDate(previousEnd.getUTCDate() - 1);
+  const previousStart = new Date(Date.UTC(year, month - 1, 10, 0, 0, 0, 0));
+  const previousEnd = new Date(Date.UTC(year, month, 10, 0, 0, 0, 0));
 
   return {
     startDate: toDateOnlyUtc(previousStart),

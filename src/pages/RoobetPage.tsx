@@ -50,6 +50,11 @@ function maskUsername(username: string): string {
   return first + asterisks + last;
 }
 
+type DateRange = {
+  startDate: string;
+  endDate: string;
+};
+
 function getCurrentRange() {
   const now = new Date();
   const year = now.getUTCFullYear();
@@ -57,23 +62,49 @@ function getCurrentRange() {
   const day = now.getUTCDate();
 
   const start =
-    day >= 10
-      ? new Date(Date.UTC(year, month, 10, 0, 0, 0, 0))
+    day >= 11
+      ? new Date(Date.UTC(year, month, 11, 0, 0, 0, 0))
       : new Date(Date.UTC(year, month - 1, 10, 0, 0, 0, 0));
 
-  const endExclusive = new Date(start);
-  endExclusive.setUTCMonth(endExclusive.getUTCMonth() + 1);
+  const end = new Date(start);
+  end.setUTCMonth(end.getUTCMonth() + 1);
 
   return {
     startDate: toDateOnlyUtc(start),
-    endDate: toDateOnlyUtc(endExclusive),
+    endDate: toDateOnlyUtc(end),
   };
 }
 
+function getPreviousRange(currentRange: DateRange): DateRange {
+  const currentStart = new Date(`${currentRange.startDate}T00:00:00.000Z`);
+
+  const previousStart = new Date(currentStart);
+  previousStart.setUTCMonth(previousStart.getUTCMonth() - 1);
+  previousStart.setUTCDate(previousStart.getUTCDate() - 1);
+
+  const previousEnd = new Date(currentStart);
+  previousEnd.setUTCDate(previousEnd.getUTCDate() - 1);
+
+  return {
+    startDate: toDateOnlyUtc(previousStart),
+    endDate: toDateOnlyUtc(previousEnd),
+  };
+}
+
+function getCountdownTargetForCurrent(currentRange: DateRange) {
+  const end = new Date(`${currentRange.endDate}T00:00:00.000Z`);
+
+  // endDate is inclusive for leaderboard windows, so countdown ends at next UTC day.
+  const nextDay = new Date(end);
+  nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+  return nextDay;
+}
+
 const RoobetPage: React.FC = () => {
-  const { leaderboard, loading, error, fetchLeaderboard } = useRoobetStore();
+  const { leaderboard, loading, error, fetchLeaderboard, fetchPreviousLeaderboard } = useRoobetStore();
 
   const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const [mode, setMode] = useState<"current" | "previous">("current");
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
     hours: 0,
@@ -81,23 +112,40 @@ const RoobetPage: React.FC = () => {
     seconds: 0,
   });
 
-  const currentRange = getCurrentRange();
-  const monthlyLabel = formatMonthlyRange(currentRange);
+  const currentRange = useMemo(() => getCurrentRange(), []);
+  const previousRange = useMemo(() => getPreviousRange(currentRange), [currentRange]);
+  const activeRange = mode === "current" ? currentRange : previousRange;
+  const monthlyLabel = formatMonthlyRange(activeRange);
 
   /* ───────────────────────────────
      Fetch leaderboard
      ─────────────────────────────── */
   useEffect(() => {
-    fetchLeaderboard(currentRange.startDate, currentRange.endDate);
-  }, [fetchLeaderboard, currentRange.startDate, currentRange.endDate]);
+    if (mode === "current") {
+      fetchLeaderboard(activeRange.startDate, activeRange.endDate);
+      return;
+    }
+
+    fetchPreviousLeaderboard(activeRange.startDate, activeRange.endDate);
+  }, [
+    fetchLeaderboard,
+    fetchPreviousLeaderboard,
+    mode,
+    activeRange.startDate,
+    activeRange.endDate,
+  ]);
 
   /* ───────────────────────────────
      Countdown to monthly end
      ─────────────────────────────── */
   useEffect(() => {
     const tick = () => {
-      const { endDate } = getCurrentRange();
-      const endTime = new Date(`${endDate}T12:00:00Z`).getTime();
+      if (mode !== "current") {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+
+      const endTime = getCountdownTargetForCurrent(currentRange).getTime();
       const diff = Math.max(0, endTime - Date.now());
       const total = Math.floor(diff / 1000);
 
@@ -112,7 +160,7 @@ const RoobetPage: React.FC = () => {
     tick();
     const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [mode, currentRange]);
 
   const topPlayers = leaderboard?.data?.slice(0, 15) ?? [];
 
@@ -133,23 +181,48 @@ const RoobetPage: React.FC = () => {
 
         <main className="flex-grow w-full px-6 py-12 mx-auto text-center max-w-7xl">
           <h1 className="text-4xl md:text-5xl font-extrabold text-[#F1A82F] mb-2">
-            💰 $2,000 MONTHLY LEADERBOARD 💰
+            💰 $2,000 {mode === "current" ? "CURRENT" : "PREVIOUS"} LEADERBOARD 💰
           </h1>
 
           <p className="text-[#F1A82F]/80 mb-8 text-lg">{monthlyLabel}</p>
 
-          {/* Timer */}
-          <div className="mb-8">
-            <h3 className="text-2xl text-[#F1A82F] font-bold mb-2">
-              Leaderboard Ends In
-            </h3>
-            <div className="flex justify-center gap-4 text-2xl font-extrabold text-[#F9B97C]">
-              <TimerBox label="Days" value={timeLeft.days} />
-              <TimerBox label="Hours" value={timeLeft.hours} />
-              <TimerBox label="Minutes" value={timeLeft.minutes} />
-              <TimerBox label="Seconds" value={timeLeft.seconds} />
-            </div>
+          <div className="flex justify-center gap-3 mb-8">
+            <Button
+              className={
+                mode === "current"
+                  ? "bg-[#F1A82F] text-[#0F0F0F] hover:bg-[#F9B97C]"
+                  : "bg-transparent border border-[#F1A82F]/40 text-[#F1A82F] hover:bg-[#F1A82F]/10"
+              }
+              onClick={() => setMode("current")}
+            >
+              Current
+            </Button>
+            <Button
+              className={
+                mode === "previous"
+                  ? "bg-[#F1A82F] text-[#0F0F0F] hover:bg-[#F9B97C]"
+                  : "bg-transparent border border-[#F1A82F]/40 text-[#F1A82F] hover:bg-[#F1A82F]/10"
+              }
+              onClick={() => setMode("previous")}
+            >
+              Previous
+            </Button>
           </div>
+
+          {/* Timer */}
+          {mode === "current" && (
+            <div className="mb-8">
+              <h3 className="text-2xl text-[#F1A82F] font-bold mb-2">
+                Leaderboard Ends In
+              </h3>
+              <div className="flex justify-center gap-4 text-2xl font-extrabold text-[#F9B97C]">
+                <TimerBox label="Days" value={timeLeft.days} />
+                <TimerBox label="Hours" value={timeLeft.hours} />
+                <TimerBox label="Minutes" value={timeLeft.minutes} />
+                <TimerBox label="Seconds" value={timeLeft.seconds} />
+              </div>
+            </div>
+          )}
 
           {/* Buttons */}
           <div className="flex items-center justify-center gap-4 mb-10">

@@ -1,9 +1,5 @@
 import { create } from "zustand";
 import axios from "axios";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-
-dayjs.extend(utc);
 
 const ROOBET_API_BASE_URL = "https://luckywdata-production.up.railway.app";
 
@@ -40,8 +36,8 @@ interface RoobetStore {
   leaderboard: LeaderboardData | null;
   loading: boolean;
   error: string | null;
-  fetchLeaderboard: (startDate?: string, endDate?: string) => Promise<void>;
-  fetchPreviousLeaderboard: (startDate?: string, endDate?: string) => Promise<void>;
+  fetchLeaderboard: (startDate: string, endDate: string) => Promise<void>;
+  fetchPreviousLeaderboard: (startDate: string, endDate: string) => Promise<void>;
 }
 
 function mapLeaderboardData(response: LeaderboardApiResponse): LeaderboardData {
@@ -76,18 +72,10 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
   loading: false,
   error: null,
 
-  fetchLeaderboard: async (startDate?: string, endDate?: string) => {
+  fetchLeaderboard: async (startDate: string, endDate: string) => {
     set({ loading: true, error: null });
 
     try {
-      // If no startDate/endDate provided -> use current month's range
-      if (!startDate || !endDate) {
-        const now = dayjs().utc();
-        // Use UTC [start, end) boundaries: month start to next month start.
-        startDate = now.startOf("month").format("YYYY-MM-DD");
-        endDate = now.startOf("month").add(1, "month").format("YYYY-MM-DD");
-      }
-
       const response = await axios.get(
         `${ROOBET_API_BASE_URL}/api/leaderboard/${startDate}/${endDate}`
       );
@@ -105,18 +93,13 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
     }
   },
 
-  fetchPreviousLeaderboard: async (startDate?: string, endDate?: string) => {
+  fetchPreviousLeaderboard: async (startDate: string, endDate: string) => {
     set({ loading: true, error: null });
 
     try {
-      const params: Record<string, string> = {};
-
-      if (startDate) params.startDate = startDate;
-      if (endDate) params.endDate = endDate;
-
       const response = await axios.get(
         `${ROOBET_API_BASE_URL}/api/leaderboard/previous`,
-        { params }
+        { params: { startDate, endDate } }
       );
 
       const updatedData = mapLeaderboardData(

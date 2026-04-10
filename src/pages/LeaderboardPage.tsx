@@ -14,12 +14,8 @@ function getCurrentRange() {
     const now = new Date();
     const year = now.getUTCFullYear();
     const month = now.getUTCMonth();
-    const day = now.getUTCDate();
 
-    const start =
-        day >= 10
-            ? new Date(Date.UTC(year, month, 10, 0, 0, 0, 0))
-            : new Date(Date.UTC(year, month - 1, 10, 0, 0, 0, 0));
+    const start = new Date(Date.UTC(year, month, 11, 0, 0, 0, 0));
 
     const endExclusive = new Date(start);
     endExclusive.setUTCMonth(endExclusive.getUTCMonth() + 1);

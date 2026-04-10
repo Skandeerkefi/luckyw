@@ -38,6 +38,7 @@ export function Navbar() {
 
   const menuItemsBeforeLeaderboards: MenuItem[] = [
     { path: "/", name: "Home", icon: <Dices className="w-5 h-5" /> },
+    { path: "/Leaderboard", name: "Leaderboard" },
     { path: "/offers", name: "Offers" },
     { path: "/rules", name: "Rules" },
   ];
@@ -53,15 +54,6 @@ export function Navbar() {
         ]
       : []),
   ];
-
-  const leaderboardLinks = [
-    { path: "/Leaderboard", name: "Current Leaderboard" },
-    { path: "/PreviousLeaderboard", name: "Previous Leaderboard" },
-  ];
-
-  const isLeaderboardActive = leaderboardLinks.some(
-    (item) => location.pathname === item.path
-  );
 
   // Socials in navbar (all images)
   const socialLinks = [
@@ -109,38 +101,6 @@ export function Navbar() {
                   </li>
                 );
               })}
-
-              <li className="relative group">
-                <button
-                  type="button"
-                  className={`px-4 py-2 rounded-xl transition-all duration-300 ${
-                    isLeaderboardActive
-                      ? "bg-[#4E2F1A] text-[#FFFBED] shadow-lg"
-                      : "text-[#F9B97C] hover:text-[#F1A82F]"
-                  }`}
-                >
-                  Leaderboards
-                </button>
-
-                <div className="invisible absolute left-0 top-full z-50 mt-2 w-44 rounded-xl border border-[#F1A82F]/25 bg-[#19110A]/95 p-2 opacity-0 shadow-xl transition-all duration-200 group-hover:visible group-hover:opacity-100">
-                  {leaderboardLinks.map((item) => {
-                    const isActive = location.pathname === item.path;
-                    return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        className={`block rounded-lg px-3 py-2 text-sm transition ${
-                          isActive
-                            ? "bg-[#4E2F1A] text-[#F1A82F]"
-                            : "text-[#F9B97C] hover:bg-[#4E2F1A]/50 hover:text-[#F1A82F]"
-                        }`}
-                      >
-                        {item.name}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </li>
 
               {menuItemsAfterLeaderboards.map((item) => {
                 const isActive = location.pathname === item.path;
@@ -240,25 +200,6 @@ export function Navbar() {
               <span>{item.name}</span>
             </Link>
           ))}
-
-          <div className="w-full max-w-xs rounded-lg border border-[#F1A82F]/25 bg-[#4E2F1A]/20 p-2">
-            <div className="px-3 py-1 text-sm uppercase tracking-wide text-[#F1A82F]">
-              Leaderboards
-            </div>
-            {leaderboardLinks.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`mt-1 block rounded-lg px-3 py-2 text-center transition ${
-                  location.pathname === item.path
-                    ? "bg-[#4E2F1A] text-[#F1A82F]"
-                    : "text-[#F9B97C] hover:bg-[#4E2F1A]/50 hover:text-[#F1A82F]"
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-          </div>
 
           {menuItemsAfterLeaderboards.map((item) => (
             <Link
