@@ -20,7 +20,12 @@ function getCurrentRange() {
   const now = new Date();
   const year = now.getUTCFullYear();
   const month = now.getUTCMonth();
-  const start = new Date(Date.UTC(year, month, 11, 0, 0, 0, 0));
+  const day = now.getUTCDate();
+
+  const start =
+    day >= 11
+      ? new Date(Date.UTC(year, month, 11, 0, 0, 0, 0))
+      : new Date(Date.UTC(year, month - 1, 11, 0, 0, 0, 0));
 
   const end = new Date(start);
   end.setUTCMonth(end.getUTCMonth() + 1);
@@ -32,12 +37,14 @@ function getCurrentRange() {
 }
 
 function getPreviousRange() {
-  const now = new Date();
-  const year = now.getUTCFullYear();
-  const month = now.getUTCMonth();
+  const { startDate } = getCurrentRange();
+  const currentStart = new Date(`${startDate}T00:00:00.000Z`);
 
-  const previousStart = new Date(Date.UTC(year, month - 1, 10, 0, 0, 0, 0));
-  const previousEnd = new Date(Date.UTC(year, month, 10, 0, 0, 0, 0));
+  const previousEnd = new Date(currentStart);
+  previousEnd.setUTCDate(previousEnd.getUTCDate() - 1);
+
+  const previousStart = new Date(previousEnd);
+  previousStart.setUTCMonth(previousStart.getUTCMonth() - 1);
 
   return {
     startDate: toDateOnlyUtc(previousStart),

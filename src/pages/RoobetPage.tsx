@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRoobetStore } from "../store/RoobetStore";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -32,14 +32,10 @@ const prizeByRank: Record<number, string> = {
    Monthly Label (12/8 → 1/8)
    ─────────────────────────────── */
 function formatMonthlyRange(range: { startDate: string; endDate: string }) {
-  const s = new Date(`${range.startDate}T00:00:00.000Z`);
-  const e = new Date(`${range.endDate}T00:00:00.000Z`);
+  const s = new Date(toUtcDateTime(range.startDate));
+  const e = new Date(toUtcDateTime(range.endDate));
 
   return `${s.getUTCMonth() + 1}/${s.getUTCDate()}-${e.getUTCMonth() + 1}/${e.getUTCDate()} Monthly Edition 🏆`;
-}
-
-function toDateOnlyUtc(d: Date) {
-  return d.toISOString().split("T")[0];
 }
 
 function maskUsername(username: string): string {
@@ -55,44 +51,51 @@ type DateRange = {
   endDate: string;
 };
 
-function getCurrentRange() {
+function toUtcDateTime(dateValue: string): string {
+  return `${toApiDateOnly(dateValue)}T00:00:00.000Z`;
+}
+
+function toApiDateOnly(dateValue: string): string {
+  const trimmed = dateValue.trim();
+  const beforeTime = trimmed.split("T")[0];
+  return beforeTime.split(" ")[0];
+}
+
+// Edit these date ranges manually when you want to change leaderboard windows.
+const MANUAL_LEADERBOARD_RANGES: {
+  current: DateRange;
+} = {
+  current: {
+    startDate: "2026-04-11",
+    endDate: "2026-05-10",
+  },
+};
+
+function getPreviousRangeLikeCard(): DateRange {
   const now = new Date();
   const year = now.getUTCFullYear();
   const month = now.getUTCMonth();
   const day = now.getUTCDate();
 
-  const start =
+  const currentStart =
     day >= 11
       ? new Date(Date.UTC(year, month, 11, 0, 0, 0, 0))
-      : new Date(Date.UTC(year, month - 1, 10, 0, 0, 0, 0));
-
-  const end = new Date(start);
-  end.setUTCMonth(end.getUTCMonth() + 1);
-
-  return {
-    startDate: toDateOnlyUtc(start),
-    endDate: toDateOnlyUtc(end),
-  };
-}
-
-function getPreviousRange(currentRange: DateRange): DateRange {
-  const currentStart = new Date(`${currentRange.startDate}T00:00:00.000Z`);
-
-  const previousStart = new Date(currentStart);
-  previousStart.setUTCMonth(previousStart.getUTCMonth() - 1);
-  previousStart.setUTCDate(previousStart.getUTCDate() - 1);
+      : new Date(Date.UTC(year, month - 1, 11, 0, 0, 0, 0));
 
   const previousEnd = new Date(currentStart);
   previousEnd.setUTCDate(previousEnd.getUTCDate() - 1);
 
+  const previousStart = new Date(previousEnd);
+  previousStart.setUTCMonth(previousStart.getUTCMonth() - 1);
+
   return {
-    startDate: toDateOnlyUtc(previousStart),
-    endDate: toDateOnlyUtc(previousEnd),
+    startDate: toApiDateOnly(previousStart.toISOString()),
+    endDate: toApiDateOnly(previousEnd.toISOString()),
   };
 }
 
 function getCountdownTargetForCurrent(currentRange: DateRange) {
-  const end = new Date(`${currentRange.endDate}T00:00:00.000Z`);
+  const end = new Date(toUtcDateTime(currentRange.endDate));
 
   // endDate is inclusive for leaderboard windows, so countdown ends at next UTC day.
   const nextDay = new Date(end);
@@ -101,7 +104,7 @@ function getCountdownTargetForCurrent(currentRange: DateRange) {
 }
 
 const RoobetPage: React.FC = () => {
-  const { leaderboard, loading, error, fetchLeaderboard, fetchPreviousLeaderboard } = useRoobetStore();
+  const { leaderboard, loading, error, fetchLeaderboard } = useRoobetStore();
 
   const [showHowItWorks, setShowHowItWorks] = useState(false);
   const [mode, setMode] = useState<"current" | "previous">("current");
@@ -112,8 +115,8 @@ const RoobetPage: React.FC = () => {
     seconds: 0,
   });
 
-  const currentRange = useMemo(() => getCurrentRange(), []);
-  const previousRange = useMemo(() => getPreviousRange(currentRange), [currentRange]);
+  const currentRange = MANUAL_LEADERBOARD_RANGES.current;
+  const previousRange = getPreviousRangeLikeCard();
   const activeRange = mode === "current" ? currentRange : previousRange;
   const monthlyLabel = formatMonthlyRange(activeRange);
 
@@ -122,17 +125,22 @@ const RoobetPage: React.FC = () => {
      ─────────────────────────────── */
   useEffect(() => {
     if (mode === "current") {
-      fetchLeaderboard(activeRange.startDate, activeRange.endDate);
+      const startDate = toApiDateOnly(activeRange.startDate);
+      const endDate = toApiDateOnly(activeRange.endDate);
+      fetchLeaderboard(startDate, endDate);
       return;
     }
 
-    fetchPreviousLeaderboard(activeRange.startDate, activeRange.endDate);
+    const previousStartDate = toApiDateOnly(previousRange.startDate);
+    const previousEndDate = toApiDateOnly(previousRange.endDate);
+    fetchLeaderboard(previousStartDate, previousEndDate);
   }, [
     fetchLeaderboard,
-    fetchPreviousLeaderboard,
     mode,
     activeRange.startDate,
     activeRange.endDate,
+    previousRange.startDate,
+    previousRange.endDate,
   ]);
 
   /* ───────────────────────────────

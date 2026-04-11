@@ -34,18 +34,18 @@ function getPreviousMonthlyPeriod() {
   const month = now.getUTCMonth();
   const day = now.getUTCDate();
 
-  // Current range starts on day 10
+  // Current range starts on day 11
   const currentStart =
-    day >= 10
-      ? new Date(Date.UTC(year, month, 10, 0, 0, 0, 0))
-      : new Date(Date.UTC(year, month - 1, 10, 0, 0, 0, 0));
+    day >= 11
+      ? new Date(Date.UTC(year, month, 11, 0, 0, 0, 0))
+      : new Date(Date.UTC(year, month - 1, 11, 0, 0, 0, 0));
 
   // Previous ends 1 day before current starts
   const previousEnd = new Date(currentStart);
   previousEnd.setUTCDate(previousEnd.getUTCDate() - 1);
 
-  // Previous starts 1 month before current starts
-  const previousStart = new Date(currentStart);
+  // Previous starts 1 month before previous end (e.g. 3/10 -> 4/10 when current starts 4/11)
+  const previousStart = new Date(previousEnd);
   previousStart.setUTCMonth(previousStart.getUTCMonth() - 1);
 
   return {
