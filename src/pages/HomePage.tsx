@@ -94,24 +94,15 @@ const HomePage = () => {
     </motion.div>
 
     {/* Cards Grid */}
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3 justify-items-center">
       
       {/* CARD TEMPLATE */}
       {[
   {
-    title: "Sunday Spins",
-    icon: "🎰",
-    description: "Weekly free spins every Sunday",
-    statsMain: "100",
-    statsSub: "FREE SPINS",
-    extraInfo: ["Have $1000 weighted wager Sunday thru Sunday and get 100 free spins"],
-    button: { text: "Claim Free Spins", link: "https://discord.com/invite/pEHw9xyerw" }
-  },
-  {
     title: "Monthly Leaderboard",
     icon: "🏆",
     description: "see rules for details",
-    statsMain: "$2000",
+    statsMain: "$2500",
     statsSub: "Total Prize Pool",
     extraInfo: [],
     badge: "POPULAR",
@@ -146,7 +137,7 @@ const HomePage = () => {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.7, type: "spring", bounce: 0.3, delay: idx * 0.1 }}
           whileHover={{ y: -10, scale: 1.02 }}
-          className="relative flex flex-col h-full cursor-pointer group"
+          className="relative flex flex-col h-full w-full max-w-md cursor-pointer group"
           onClick={() => window.open(offer.button.link, "_blank")}
         >
           {/* Glow Effect */}

@@ -83,7 +83,7 @@ export const CurrentLeaderboard = () => {
   const period = useMemo(() => getCurrentMonthlyPeriod(), []);
 
   // Monthly prizes
-  const prizes = [650, 350, 250];
+  const prizes = [800, 550, 325];
   const medals = ["🥇", "🥈", "🥉"];
 
   if (loading)

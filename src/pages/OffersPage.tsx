@@ -6,15 +6,6 @@ import { motion } from "framer-motion";
 const OffersPage = () => {
   const offers = [
     {
-      title: "Sunday Spins",
-      icon: "🎰",
-      description: "Weekly free spins every Sunday",
-      statsMain: "100",
-      statsSub: "FREE SPINS",
-      extraInfo: ["Have $1000 weighted wager Sunday thru Sunday and get 100 free spins"],
-      button: { text: "Claim Free Spins", link: "https://discord.com/invite/pEHw9xyerw" },
-    },
-    {
       title: "Monthly Leaderboard",
       icon: "🏆",
       description: "See rules for Details",

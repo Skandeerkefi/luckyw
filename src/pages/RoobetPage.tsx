@@ -13,9 +13,22 @@ import {
 import { Info } from "lucide-react";
 
 /* ───────────────────────────────
-   MONTHLY PRIZE MAPPING ($2000)
+   MONTHLY PRIZE MAPPING ($2500)
    ─────────────────────────────── */
-const prizeByRank: Record<number, string> = {
+const currentPrizeByRank: Record<number, string> = {
+  1: "$800",
+  2: "$550",
+  3: "$325",
+  4: "$200",
+  5: "$150",
+  6: "$125",
+  7: "$125",
+  8: "$100",
+  9: "$75",
+  10: "$50",
+};
+
+const previousPrizeByRank: Record<number, string> = {
   1: "$600",
   2: "$350",
   3: "$250",
@@ -119,6 +132,7 @@ const RoobetPage: React.FC = () => {
   const previousRange = getPreviousRangeLikeCard();
   const activeRange = mode === "current" ? currentRange : previousRange;
   const monthlyLabel = formatMonthlyRange(activeRange);
+  const prizeByRank = mode === "current" ? currentPrizeByRank : previousPrizeByRank;
 
   /* ───────────────────────────────
      Fetch leaderboard
@@ -189,7 +203,7 @@ const RoobetPage: React.FC = () => {
 
         <main className="flex-grow w-full px-6 py-12 mx-auto text-center max-w-7xl">
           <h1 className="text-4xl md:text-5xl font-extrabold text-[#F1A82F] mb-2">
-            💰 $2,000 {mode === "current" ? "CURRENT" : "PREVIOUS"} LEADERBOARD 💰
+            💰 {mode === "current" ? "$2,500 CURRENT" : "$2,000 PREVIOUS"} LEADERBOARD 💰
           </h1>
 
           <p className="text-[#F1A82F]/80 mb-8 text-lg">{monthlyLabel}</p>
