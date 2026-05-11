@@ -1,9 +1,6 @@
 import { create } from "zustand";
+import { buildApiUrl } from "@/lib/api";
 import { useAuthStore } from "./useAuthStore";
-
-const API_BASES = [
-	"https://luckywdata-production.up.railway.app",
-];
 
 export type TournamentStatus = "upcoming" | "live" | "finished";
 export type TournamentFormat = "1v1" | "3v3";
@@ -216,24 +213,13 @@ const getAuthHeaders = () => {
 };
 
 const request = async (path: string, options: RequestInit = {}) => {
-	let lastError: unknown;
-
-	for (const base of API_BASES) {
-		try {
-			const res = await fetch(`${base}${path}`, options);
-			if (!res.ok) {
-				const data = await res.json().catch(() => ({}));
-				throw new Error(data.message || `Request failed: ${res.status}`);
-			}
-			return res.json();
-		} catch (error) {
-			lastError = error;
-		}
+	const res = await fetch(buildApiUrl(path), options);
+	if (!res.ok) {
+		const data = await res.json().catch(() => ({}));
+		throw new Error(data.message || `Request failed: ${res.status}`);
 	}
 
-	throw lastError instanceof Error
-		? lastError
-		: new Error("Request failed on all configured API bases");
+	return res.json();
 };
 
 export const useTournamentStore = create<TournamentState>((set, get) => ({

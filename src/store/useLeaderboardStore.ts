@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { buildApiUrl } from "@/lib/api";
 
 export type LeaderboardPeriod = "monthly";
 
@@ -17,9 +18,6 @@ interface LeaderboardState {
 	setPeriod: (period: LeaderboardPeriod) => void;
 	fetchLeaderboard: () => Promise<void>;
 }
-
-const API_URL =
-	"https://kingdata-vez1.onrender.com/api/affiliates";
 
 const getDateRange = (
 	period: LeaderboardPeriod
@@ -67,7 +65,7 @@ export const useLeaderboardStore = create<LeaderboardState>((set) => ({
 		try {
 			const { start_at, end_at } = getDateRange("monthly");
 			const response = await fetch(
-				`${API_URL}?start_at=${start_at}&end_at=${end_at}`
+				buildApiUrl(`/api/affiliates?start_at=${start_at}&end_at=${end_at}`)
 			);
 
 			if (!response.ok) {

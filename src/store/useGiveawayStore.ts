@@ -40,22 +40,6 @@ type WagerDebugEntry = {
 	effectiveWager: number;
 };
 
-const API_BASES = [
-	"https://luckywdata-production.up.railway.app",
-];
-
-const withApiFallback = async <T>(request: (base: string) => Promise<T>) => {
-	let lastError: unknown;
-	for (const base of API_BASES) {
-		try {
-			return await request(base);
-		} catch (error) {
-			lastError = error;
-		}
-	}
-	throw lastError;
-};
-
 const getErrorMessage = (error: unknown, fallback: string) => {
 	if (
 		typeof error === "object" &&
@@ -108,22 +92,18 @@ export const useGiveawayStore = create<GiveawayState>((set, get) => ({
 
 	fetchGiveawayPlayers: async (id) => {
 		const token = useAuthStore.getState().token;
-		const res = await withApiFallback((base) =>
-			api.get(`${base}/api/gws/${id}/players`, {
-				headers: { Authorization: `Bearer ${token}` },
-			})
-		);
+		const res = await api.get(`/api/gws/${id}/players`, {
+			headers: { Authorization: `Bearer ${token}` },
+		});
 		return (res.data?.players || []) as GiveawayPlayerDetails[];
 	},
 
 	fetchGiveaways: async () => {
 		const token = useAuthStore.getState().token;
 		try {
-			const res = await withApiFallback((base) =>
-				api.get(`${base}/api/gws`, {
-					headers: { Authorization: `Bearer ${token}` },
-				})
-			);
+			const res = await api.get(`/api/gws`, {
+				headers: { Authorization: `Bearer ${token}` },
+			});
 			const userId = useAuthStore.getState().user?.id;
 			const enriched: Giveaway[] = (res.data as Giveaway[]).map((gws) => ({
 				...gws,
@@ -136,9 +116,7 @@ export const useGiveawayStore = create<GiveawayState>((set, get) => ({
 			set({ giveaways: enriched });
 
 			try {
-				const wagerRes = await withApiFallback((base) =>
-					api.get(`${base}/api/gws/wager-debug`)
-				);
+				const wagerRes = await api.get(`/api/gws/wager-debug`);
 				set({ wagerDebugList: wagerRes.data?.data || [] });
 			} catch (wagerErr) {
 				console.error("Failed to fetch wager debug list", wagerErr);
@@ -151,14 +129,12 @@ export const useGiveawayStore = create<GiveawayState>((set, get) => ({
 	enterGiveaway: async (id, toast) => {
 		const token = useAuthStore.getState().token;
 		try {
-			await withApiFallback((base) =>
-				api.post(
-					`${base}/api/gws/${id}/join`,
-					{},
-					{
-						headers: { Authorization: `Bearer ${token}` },
-					}
-				)
+			await api.post(
+				`/api/gws/${id}/join`,
+				{},
+				{
+					headers: { Authorization: `Bearer ${token}` },
+				}
 			);
 			await get().fetchGiveaways();
 			toast({ title: "Entered successfully" });
@@ -193,14 +169,12 @@ export const useGiveawayStore = create<GiveawayState>((set, get) => ({
 	) => {
 		const token = useAuthStore.getState().token;
 		try {
-			await withApiFallback((base) =>
-				api.post(
-					`${base}/api/gws`,
-					{ title, endTime, entryRequirement, requiredWagerAmount },
-					{
-						headers: { Authorization: `Bearer ${token}` },
-					}
-				)
+			await api.post(
+				`/api/gws`,
+				{ title, endTime, entryRequirement, requiredWagerAmount },
+				{
+					headers: { Authorization: `Bearer ${token}` },
+				}
 			);
 			await get().fetchGiveaways();
 			toast({ title: "Giveaway created successfully" });
@@ -217,14 +191,12 @@ export const useGiveawayStore = create<GiveawayState>((set, get) => ({
 	drawWinner: async (id, toast) => {
 		const token = useAuthStore.getState().token;
 		try {
-			const res = await withApiFallback((base) =>
-				api.post(
-					`${base}/api/gws/${id}/draw`,
-					{},
-					{
-						headers: { Authorization: `Bearer ${token}` },
-					}
-				)
+			const res = await api.post(
+				`/api/gws/${id}/draw`,
+				{},
+				{
+					headers: { Authorization: `Bearer ${token}` },
+				}
 			);
 
 			const winner = res.data?.winner;

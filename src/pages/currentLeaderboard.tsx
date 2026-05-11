@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useRoobetStore } from "../store/RoobetStore";
 import {
-	buildDefaultPreviousRange,
+	buildDefaultCurrentRange,
 	formatMoney,
 	formatRangeLabel,
 	getPrizeAmountByRank,
@@ -9,13 +9,13 @@ import {
 	maskUsername,
 } from "@/lib/roobetLeaderboard";
 
-export const PreviousLeaderboard = () => {
+export const CurrentLeaderboard = () => {
 	const {
 		leaderboard,
 		leaderboardConfig,
 		loading,
 		error,
-		fetchPreviousLeaderboard,
+		fetchLeaderboard,
 		fetchLeaderboardConfig,
 	} = useRoobetStore();
 
@@ -30,19 +30,19 @@ export const PreviousLeaderboard = () => {
 			return;
 		}
 
-		const previousRange = leaderboardConfig.previous ?? buildDefaultPreviousRange();
-		fetchPreviousLeaderboard(previousRange.startDate, previousRange.endDate);
-	}, [fetchPreviousLeaderboard, leaderboardConfig]);
+		const currentRange = leaderboardConfig.current ?? buildDefaultCurrentRange();
+		fetchLeaderboard(currentRange.startDate, currentRange.endDate);
+	}, [fetchLeaderboard, leaderboardConfig]);
 
-	const previousRange = leaderboardConfig?.previous ?? buildDefaultPreviousRange();
-	const prizeByRank = getPrizeAmountByRank(previousRange.prizeSplit);
-	const totalPrize = getTotalPrize(previousRange.prizeSplit);
+	const currentRange = leaderboardConfig?.current ?? buildDefaultCurrentRange();
+	const prizeByRank = getPrizeAmountByRank(currentRange.prizeSplit);
+	const totalPrize = getTotalPrize(currentRange.prizeSplit);
 	const topPlayers = leaderboard?.data?.slice(0, 3) ?? [];
 	const podiumOrder =
 		topPlayers.length === 3 ? [topPlayers[1], topPlayers[0], topPlayers[2]] : topPlayers;
 
 	if (loading) {
-		return <p className="text-lg text-center text-white/70">Loading previous leaderboard…</p>;
+		return <p className="text-center text-lg text-white/70">Loading leaderboard…</p>;
 	}
 
 	if (error) {
@@ -50,14 +50,14 @@ export const PreviousLeaderboard = () => {
 	}
 
 	if (!leaderboard?.data?.length) {
-		return <p className="text-center text-white/60">No previous leaderboard data available.</p>;
+		return <p className="text-center text-white/60">No leaderboard data available.</p>;
 	}
 
 	return (
 		<div className="mx-auto max-w-5xl">
 			<div className="mb-8 flex flex-wrap items-center justify-center gap-4 text-center text-white/70">
 				<p>
-					Period: <span className="text-[#F1A82F]">{formatRangeLabel(previousRange)}</span>
+					Period: <span className="text-[#F1A82F]">{formatRangeLabel(currentRange)}</span>
 				</p>
 				<p className="rounded-full border border-[#F1A82F]/30 bg-[#F1A82F]/10 px-4 py-2 text-sm text-[#F1A82F]">
 					Total Prize Pool: ${formatMoney(totalPrize)}
@@ -97,10 +97,11 @@ export const PreviousLeaderboard = () => {
 
 			<div className="mt-6 text-center">
 				<button
-					onClick={() => (window.location.href = "/PreviousLeaderboard")}
-					className="relative rounded-xl bg-gradient-to-r from-[#F1A82F] to-[#FFD700] px-8 py-3 font-bold text-black shadow-[0_0_15px_rgba(241,168,47,0.7)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(241,168,47,0.8)]"
+					onClick={() => (window.location.href = "/Leaderboard")}
+					className="relative rounded-xl bg-gradient-to-r from-[#F1A82F] to-[#FFD700] px-8 py-3 font-bold text-black shadow-[0_0_15px_rgba(241,168,47,0.7)] transition-all duration-300 hover:shadow-[0_0_25px_rgba(241,168,47,1)]"
 				>
-					View Full Previous Leaderboard
+					<span className="relative z-10">See Full Leaderboard</span>
+					<span className="absolute inset-0 -z-10 animate-pulse rounded-xl bg-yellow-400/20 blur-xl" />
 				</button>
 			</div>
 		</div>

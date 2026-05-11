@@ -45,6 +45,7 @@ export function Navbar() {
 
   const menuItemsAfterLeaderboards: MenuItem[] = [
     // { path: "/slot", name: "Slot Calls" },
+    ...(isAdmin ? [{ path: "/admin/roobet", name: "Admin Leaderboard", icon: <Crown className="w-5 h-5 text-[#F1A82F]" /> }] : []),
     { path: "/giveaways", name: "Giveaways" },
     { path: "/tournaments", name: "Tournaments" },
     ...(!user

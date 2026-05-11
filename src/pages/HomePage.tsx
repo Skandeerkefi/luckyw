@@ -2,7 +2,7 @@ import React from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
-import { CurrentLeaderboard } from "./urrentLeaderboard";
+import { CurrentLeaderboard } from "./CurrentLeaderboard";
 import { PreviousLeaderboard } from "./PreviousLeaderboardCard";
 
 const HomePage = () => {
@@ -13,8 +13,8 @@ const HomePage = () => {
       <div
         className="fixed inset-0 z-0 bg-center bg-no-repeat bg-contain opacity-44"
         style={{
-          backgroundImage: `url('https://i.ibb.co/2YNrPKrD/3dgifmaker96052.gif)`,
-          backgroundColor: "#000"
+          backgroundImage: "url('https://i.ibb.co/2YNrPKrD/3dgifmaker96052.gif')",
+          backgroundColor: "#000",
         }}
       ></div>
 
@@ -137,7 +137,7 @@ const HomePage = () => {
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.7, type: "spring", bounce: 0.3, delay: idx * 0.1 }}
           whileHover={{ y: -10, scale: 1.02 }}
-          className="relative flex flex-col h-full w-full max-w-md cursor-pointer group"
+          className="relative flex flex-col w-full h-full max-w-md cursor-pointer group"
           onClick={() => window.open(offer.button.link, "_blank")}
         >
           {/* Glow Effect */}

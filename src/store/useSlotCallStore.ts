@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { buildApiUrl } from "@/lib/api";
 import { useAuthStore } from "./useAuthStore";
 
 export type SlotCallStatus = "pending" | "accepted" | "rejected" | "played";
@@ -13,21 +14,8 @@ export interface SlotCall {
 	bonusCall?: { name: string; createdAt: string };
 }
 
-const API_BASES = [
-	"https://luckywdata-production.up.railway.app",
-];
-
-const fetchWithBaseFallback = async (path: string, options: RequestInit) => {
-	let lastError: unknown;
-	for (const base of API_BASES) {
-		try {
-			return await fetch(`${base}${path}`, options);
-		} catch (error) {
-			lastError = error;
-		}
-	}
-	throw lastError;
-};
+const fetchWithApi = (path: string, options: RequestInit) =>
+	fetch(buildApiUrl(path), options);
 
 interface SlotCallState {
 	slotCalls: SlotCall[];
@@ -58,7 +46,7 @@ export const useSlotCallStore = create<SlotCallState>((set, get) => ({
 
 		set({ isSubmitting: true });
 		try {
-			const res = await fetchWithBaseFallback("/api/slot-calls", {
+			const res = await fetchWithApi("/api/slot-calls", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -107,7 +95,7 @@ export const useSlotCallStore = create<SlotCallState>((set, get) => ({
 		if (!token) return { success: false, error: "Not authenticated" };
 
 		try {
-			const res = await fetchWithBaseFallback(`/api/slot-calls/${id}/bonus-call`, {
+			const res = await fetchWithApi(`/api/slot-calls/${id}/bonus-call`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -142,7 +130,7 @@ export const useSlotCallStore = create<SlotCallState>((set, get) => ({
 		if (!token) return { success: false, error: "Not authenticated" };
 
 		try {
-			const res = await fetchWithBaseFallback(`/api/slot-calls/${id}/status`, {
+			const res = await fetchWithApi(`/api/slot-calls/${id}/status`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -187,7 +175,7 @@ export const useSlotCallStore = create<SlotCallState>((set, get) => ({
 		if (!token) return { success: false, error: "Not authenticated" };
 
 		try {
-			const res = await fetchWithBaseFallback(`/api/slot-calls/${id}`, {
+			const res = await fetchWithApi(`/api/slot-calls/${id}`, {
 				method: "DELETE",
 				headers: {
 					Authorization: `Bearer ${token}`,
@@ -220,7 +208,7 @@ export const useSlotCallStore = create<SlotCallState>((set, get) => ({
 		const path = userRole === "admin" ? "/api/slot-calls" : "/api/slot-calls/my";
 
 		try {
-			const res = await fetchWithBaseFallback(path, {
+			const res = await fetchWithApi(path, {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},

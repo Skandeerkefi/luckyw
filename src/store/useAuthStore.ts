@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { buildApiUrl } from "@/lib/api";
 
 interface User {
 	id: string;
@@ -34,21 +35,8 @@ interface AuthState {
 	loadFromStorage: () => void;
 }
 
-const API_BASES = [
-	"https://luckywdata-production.up.railway.app",
-];
-
-const fetchWithBaseFallback = async (path: string, options: RequestInit) => {
-	let lastError: unknown;
-	for (const base of API_BASES) {
-		try {
-			return await fetch(`${base}${path}`, options);
-		} catch (error) {
-			lastError = error;
-		}
-	}
-	throw lastError;
-};
+const fetchWithApi = (path: string, options: RequestInit) =>
+	fetch(buildApiUrl(path), options);
 
 export const useAuthStore = create<AuthState>((set, get) => ({
 	user: null,
@@ -61,7 +49,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 	login: async (kickUsername, password) => {
 		try {
-			const res = await fetchWithBaseFallback("/api/auth/login", {
+			const res = await fetchWithApi("/api/auth/login", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ kickUsername, password }),
@@ -102,7 +90,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 	) => {
 		set({ isLoading: true });
 		try {
-			const res = await fetchWithBaseFallback("/api/auth/register", {
+			const res = await fetchWithApi("/api/auth/register", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({

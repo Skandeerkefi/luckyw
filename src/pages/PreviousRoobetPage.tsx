@@ -1,238 +1,147 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Info } from "lucide-react";
 import { useRoobetStore } from "../store/RoobetStore";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogDescription,
 } from "@/components/ui/dialog";
-import { Info } from "lucide-react";
-
-/* ───────────────────────────────
-   MONTHLY PRIZE MAPPING ($2000)
-   ─────────────────────────────── */
-const prizeByRank: Record<number, string> = {
-  1: "$600",
-  2: "$350",
-  3: "$250",
-  4: "$200",
-  5: "$150",
-  6: "$120",
-  7: "$100",
-  8: "$90",
-  9: "$80",
-  10: "$60",
-};
-
-/* ───────────────────────────────
-   Monthly Label
-   ─────────────────────────────── */
-function formatMonthlyRange(range: { startDate: string; endDate: string }) {
-  const s = new Date(`${range.startDate}T00:00:00.000Z`);
-  const e = new Date(`${range.endDate}T00:00:00.000Z`);
-
-  return `${s.getUTCMonth() + 1}/${s.getUTCDate()}-${e.getUTCMonth() + 1}/${e.getUTCDate()} Monthly Edition 🏆`;
-}
-
-function toDateOnlyUtc(d: Date) {
-  return d.toISOString().split("T")[0];
-}
-
-function maskUsername(username: string): string {
-  if (!username || username.length <= 2) return "***";
-  const first = username.charAt(0);
-  const last = username.charAt(username.length - 1);
-  const asterisks = "*".repeat(Math.max(1, username.length - 2));
-  return first + asterisks + last;
-}
-
-function getPreviousRange() {
-  const now = new Date();
-  const year = now.getUTCFullYear();
-  const month = now.getUTCMonth();
-  const previousStart = new Date(Date.UTC(year, month - 1, 10, 0, 0, 0, 0));
-  const previousEnd = new Date(Date.UTC(year, month, 10, 0, 0, 0, 0));
-
-  return {
-    startDate: toDateOnlyUtc(previousStart),
-    endDate: toDateOnlyUtc(previousEnd),
-  };
-}
+import {
+	buildDefaultPreviousRange,
+	formatMoney,
+	formatRangeLabel,
+	getPrizeAmountByRank,
+	getTotalPrize,
+	maskUsername,
+} from "@/lib/roobetLeaderboard";
 
 const PreviousRoobetPage: React.FC = () => {
-  const { leaderboard, loading, error, fetchPreviousLeaderboard } =
-    useRoobetStore();
+	const {
+		leaderboard,
+		leaderboardConfig,
+		loading,
+		error,
+		fetchPreviousLeaderboard,
+		fetchLeaderboardConfig,
+	} = useRoobetStore();
 
-  const [showHowItWorks, setShowHowItWorks] = useState(false);
+	const [showHowItWorks, setShowHowItWorks] = useState(false);
 
-  const previousRange = useMemo(() => getPreviousRange(), []);
-  const monthlyLabel = formatMonthlyRange(previousRange);
+	useEffect(() => {
+		if (!leaderboardConfig) {
+			fetchLeaderboardConfig();
+		}
+	}, [fetchLeaderboardConfig, leaderboardConfig]);
 
-  /* ───────────────────────────────
-     Fetch leaderboard
-     ─────────────────────────────── */
-  useEffect(() => {
-    fetchPreviousLeaderboard(previousRange.startDate, previousRange.endDate);
-  }, [fetchPreviousLeaderboard, previousRange.startDate, previousRange.endDate]);
+	const previousRange = leaderboardConfig?.previous ?? buildDefaultPreviousRange();
+	const prizeByRank = getPrizeAmountByRank(previousRange.prizeSplit);
+	const totalPrize = getTotalPrize(previousRange.prizeSplit);
 
-  const topPlayers = leaderboard?.data?.slice(0, 15) ?? [];
+	useEffect(() => {
+		if (!leaderboardConfig) {
+			return;
+		}
 
-  return (
-    <div className="relative flex flex-col min-h-screen text-[#FFFBED] overflow-hidden">
-      {/* Background */}
-      <div
-        className="fixed inset-0 z-0 bg-center bg-no-repeat bg-contain opacity-40"
-        style={{
-          backgroundImage: `url('https://i.ibb.co/2YNrPKrD/3dgifmaker96052.gif')`,
-          backgroundColor: "#000",
-        }}
-      />
-      <div className="fixed inset-0 z-0 bg-gradient-to-b from-black/80 via-black/90 to-black" />
+		fetchPreviousLeaderboard(previousRange.startDate, previousRange.endDate);
+	}, [fetchPreviousLeaderboard, leaderboardConfig, previousRange.endDate, previousRange.startDate]);
 
-      <div className="relative z-10">
-        <Navbar />
+	const topPlayers = leaderboard?.data?.slice(0, 15) ?? [];
 
-        <main className="flex-grow w-full px-6 py-12 mx-auto text-center max-w-7xl">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-[#F1A82F] mb-2">
-            💰 $2,000 PREVIOUS MONTHLY LEADERBOARD 💰
-          </h1>
+	return (
+		<div className="relative flex min-h-screen flex-col overflow-hidden text-[#FFFBED]">
+			<div
+				className="fixed inset-0 z-0 bg-center bg-no-repeat bg-contain opacity-40"
+				style={{
+					backgroundImage: "url('https://i.ibb.co/2YNrPKrD/3dgifmaker96052.gif')",
+					backgroundColor: "#000",
+				}}
+			/>
+			<div className="fixed inset-0 z-0 bg-gradient-to-b from-black/80 via-black/90 to-black" />
 
-          <p className="text-[#F1A82F]/80 mb-8 text-lg">{monthlyLabel}</p>
+			<div className="relative z-10">
+				<Navbar />
 
-          {/* Buttons */}
-          <div className="flex items-center justify-center gap-4 mb-10">
-            <Button
-              className="bg-[#F1A82F] hover:bg-[#F9B97C] text-[#0F0F0F] px-6 py-3 rounded-full font-semibold shadow-lg"
-              onClick={() =>
-                window.open(
-                  "https://roobet.com/?ref=luckyw",
-                  "_blank",
-                  "noopener noreferrer"
-                )
-              }
-            >
-              Join Now
-            </Button>
+				<main className="mx-auto w-full max-w-7xl flex-grow px-6 py-12 text-center">
+					<h1 className="mb-2 text-4xl font-extrabold text-[#F1A82F] md:text-5xl">
+						💰 PREVIOUS LEADERBOARD 💰
+					</h1>
+					<p className="mb-2 text-lg text-[#F1A82F]/80">{formatRangeLabel(previousRange)}</p>
+					<p className="mb-8 text-sm text-[#F1A82F]/70">Total Prize Pool: ${formatMoney(totalPrize)}</p>
 
-            <Button
-              className="bg-transparent border border-[#F1A82F] hover:bg-[#F1A82F]/10 text-[#F1A82F] px-6 py-3 rounded-full font-semibold flex items-center gap-2"
-              onClick={() => setShowHowItWorks(true)}
-            >
-              <Info className="w-4 h-4" /> How It Works
-            </Button>
-          </div>
+					<div className="mb-10 flex items-center justify-center gap-4">
+						<Button
+							className="rounded-full bg-[#F1A82F] px-6 py-3 font-semibold text-[#0F0F0F] shadow-lg hover:bg-[#F9B97C]"
+							onClick={() => window.open("https://roobet.com/?ref=luckyw", "_blank", "noopener noreferrer")}
+						>
+							Join Now
+						</Button>
 
-          {/* Leaderboard */}
-          {loading && <p className="text-[#F1A82F]">Loading leaderboard…</p>}
-          {error && <p className="text-[#F9B97C]">{error}</p>}
+						<Button
+							className="flex items-center gap-2 rounded-full border border-[#F1A82F] px-6 py-3 font-semibold text-[#F1A82F] hover:bg-[#F1A82F]/10"
+							onClick={() => setShowHowItWorks(true)}
+						>
+							<Info className="h-4 w-4" /> How It Works
+						</Button>
+					</div>
 
-          {topPlayers.length > 0 ? (
-            <div className="mb-12 overflow-x-auto">
-              <table className="w-full table-auto bg-[#0F0F0F]/80 backdrop-blur-md rounded-2xl shadow-lg">
-                <thead className="bg-[#F1A82F] text-[#0F0F0F] uppercase text-sm">
-                  <tr>
-                    <th className="p-4 w-[10%]">Rank</th>
-                    <th className="p-4 w-[40%]">Player</th>
-                    <th className="p-4 w-[25%] text-right">Wagered</th>
-                    <th className="p-4 w-[25%] text-right">Prize</th>
-                  </tr>
-                </thead>
+					{loading && <p className="text-[#F1A82F]">Loading leaderboard…</p>}
+					{error && <p className="text-[#F9B97C]">{error}</p>}
 
-                <tbody>
-                  {topPlayers.map((p) => {
-                    const r = p.rankLevel;
+					{topPlayers.length > 0 ? (
+						<div className="mb-12 overflow-x-auto rounded-2xl border border-[#F1A82F]/20 bg-[#0F0F0F]/80 shadow-lg backdrop-blur-md">
+							<table className="w-full table-auto">
+								<thead className="bg-[#F1A82F] text-sm uppercase text-[#0F0F0F]">
+									<tr>
+										<th className="w-[10%] p-4">Rank</th>
+										<th className="w-[40%] p-4">Player</th>
+										<th className="w-[25%] p-4 text-right">Wagered</th>
+										<th className="w-[25%] p-4 text-right">Prize</th>
+									</tr>
+								</thead>
 
-                    const rankColor =
-                      r === 1
-                        ? "bg-yellow-400 text-black"
-                        : r === 2
-                        ? "bg-gray-400 text-black"
-                        : r === 3
-                        ? "bg-yellow-700 text-white"
-                        : r <= 10
-                        ? "bg-[#F1A82F]/20 text-[#F1A82F]"
-                        : "bg-white/10 text-white/60";
+								<tbody>
+									{topPlayers.map((player) => {
+										const rank = player.rankLevel;
+										return (
+											<tr key={player.uid} className="border-t border-[#F9B97C]/20 transition hover:bg-[#F9B97C]/10">
+												<td className="p-4 text-center">#{rank}</td>
+												<td className="truncate p-4 font-semibold text-center">{maskUsername(player.username)}</td>
+												<td className="p-4 text-right font-mono text-[#F9B97C]">${formatMoney(Number(player.weightedWagered))}</td>
+												<td className="p-4 text-right font-bold text-[#F1A82F]">${formatMoney(prizeByRank[rank] ?? 0)}</td>
+											</tr>
+										);
+									})}
+								</tbody>
+							</table>
+						</div>
+					) : !loading && !error ? (
+						<p className="mb-12 text-[#F1A82F]/70">No players yet this period.</p>
+					) : null}
+				</main>
+				<Footer />
+			</div>
 
-                    return (
-                      <tr
-                        key={p.uid}
-                        className="border-t border-[#F9B97C]/20 hover:bg-[#F9B97C]/10 transition"
-                      >
-                        <td className="p-4 text-center">
-                          <span
-                            className={`inline-flex w-10 h-10 items-center justify-center rounded-full font-bold ${rankColor}`}
-                          >
-                            #{r}
-                          </span>
-                        </td>
-
-                        <td className="p-4 font-semibold text-center truncate">
-                          {maskUsername(p.username)}
-                        </td>
-
-                        <td className="p-4 text-right font-mono text-[#F9B97C]">
-                          ${Number(p.weightedWagered).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </td>
-
-                        <td className="p-4 text-right font-bold text-[#F1A82F]">
-                          {prizeByRank[r] || "-"}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            !loading &&
-            !error && (
-              <p className="text-[#F1A82F]/70 mb-12">
-                No players in this period.
-              </p>
-            )
-          )}
-        </main>
-
-        <Footer />
-      </div>
-
-      {/* How it works dialog */}
-      <Dialog open={showHowItWorks} onOpenChange={setShowHowItWorks}>
-        <DialogContent className="bg-[#0F0F0F] border border-[#F1A82F]/30 text-[#FFFBED] max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-[#F1A82F] text-2xl font-bold text-center">
-              How the Leaderboard Works
-            </DialogTitle>
-            <DialogDescription className="text-[#F1A82F]/80 text-center">
-              Your wagers on Roobet count toward the leaderboard with RTP-based weighting.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-3 text-sm">
-            <p>
-              Games with an RTP of <strong>97% or less</strong> contribute <strong>100%</strong> of the amount wagered.
-            </p>
-            <p>
-              Games with an RTP <strong>above 97%</strong> contribute <strong>50%</strong> of the amount wagered.
-            </p>
-            <p>
-              Games with an RTP of <strong>98% and above</strong> contribute <strong>10%</strong> of the amount wagered.
-            </p>
-            <p className="border-t border-[#F1A82F]/30 pt-3">
-              Only <strong>Slots</strong> and <strong>Provably Fair</strong> count (house games with <strong>Dice excluded</strong>).
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+			<Dialog open={showHowItWorks} onOpenChange={setShowHowItWorks}>
+				<DialogContent className="max-w-lg border border-[#F1A82F]/30 bg-[#0F0F0F] text-[#FFFBED]">
+					<DialogHeader>
+						<DialogTitle className="text-center text-2xl font-bold text-[#F1A82F]">How the Leaderboard Works</DialogTitle>
+						<DialogDescription className="text-center text-[#F1A82F]/80">Weighted wagers based on RTP determine ranking.</DialogDescription>
+					</DialogHeader>
+					<div className="space-y-3 text-sm">
+						<p>RTP &lt;= 97% -&gt; <strong>100%</strong> weight</p>
+						<p>RTP &gt; 97% -&gt; <strong>50%</strong> weight</p>
+						<p>RTP &gt;= 98% -&gt; <strong>10%</strong> weight</p>
+						<p className="border-t border-[#F1A82F]/30 pt-3">Slots and Provably Fair count, Dice excluded.</p>
+					</div>
+				</DialogContent>
+			</Dialog>
+		</div>
+	);
 };
 
 export default PreviousRoobetPage;

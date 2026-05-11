@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import axios from "axios";
-
-const ROOBET_API_BASE_URL = "https://luckywdata-production.up.railway.app";
+import { buildApiUrl } from "@/lib/api";
 
 interface Player {
   uid: string;
@@ -32,12 +31,31 @@ interface LeaderboardApiResponse {
   data: LeaderboardApiPlayer[];
 }
 
+interface PrizeSplitEntry {
+  rank: number;
+  amount: number;
+}
+
+interface LeaderboardWindowConfig {
+  startDate: string;
+  endDate: string;
+  prizeSplit: PrizeSplitEntry[];
+}
+
+interface LeaderboardConfigResponse {
+  current: LeaderboardWindowConfig;
+  previous: LeaderboardWindowConfig;
+  updatedAt?: string | null;
+}
+
 interface RoobetStore {
   leaderboard: LeaderboardData | null;
+  leaderboardConfig: LeaderboardConfigResponse | null;
   loading: boolean;
   error: string | null;
   fetchLeaderboard: (startDate: string, endDate: string) => Promise<void>;
   fetchPreviousLeaderboard: (startDate: string, endDate: string) => Promise<void>;
+  fetchLeaderboardConfig: () => Promise<LeaderboardConfigResponse | null>;
 }
 
 function mapLeaderboardData(response: LeaderboardApiResponse): LeaderboardData {
@@ -69,15 +87,29 @@ function getErrorMessage(error: unknown, fallback: string): string {
 
 export const useRoobetStore = create<RoobetStore>((set) => ({
   leaderboard: null,
+  leaderboardConfig: null,
   loading: false,
   error: null,
+
+  fetchLeaderboardConfig: async () => {
+    try {
+      const response = await axios.get(buildApiUrl("/api/leaderboard/config"));
+
+      const config = response.data as LeaderboardConfigResponse;
+      set({ leaderboardConfig: config });
+      return config;
+    } catch (err: unknown) {
+      set({ error: getErrorMessage(err, "Failed to fetch leaderboard config") });
+      return null;
+    }
+  },
 
   fetchLeaderboard: async (startDate: string, endDate: string) => {
     set({ loading: true, error: null });
 
     try {
       const response = await axios.get(
-        `${ROOBET_API_BASE_URL}/api/leaderboard/${startDate}/${endDate}`
+        buildApiUrl(`/api/leaderboard/${startDate}/${endDate}`)
       );
 
       const updatedData = mapLeaderboardData(
@@ -97,10 +129,7 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
     set({ loading: true, error: null });
 
     try {
-      const response = await axios.get(
-        `${ROOBET_API_BASE_URL}/api/leaderboard/previous`,
-        { params: { startDate, endDate } }
-      );
+      const response = await axios.get(buildApiUrl("/api/leaderboard/previous"), { params: { startDate, endDate } });
 
       const updatedData = mapLeaderboardData(
         response.data as LeaderboardApiResponse

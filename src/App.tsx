@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import HomePage from "@/pages/HomePage";
 import RoobetPage from "@/pages/RoobetPage";
 import OffersPage from "@/pages/OffersPage";
@@ -11,6 +11,8 @@ import SlotCallsPage from "@/pages/SlotCallsPage";
 import TournamentsPage from "@/pages/TournamentsPage";
 import TournamentDetailsPage from "@/pages/TournamentDetailsPage";
 import TournamentHistoryPage from "@/pages/TournamentHistoryPage";
+import PreviousRoobetPage from "@/pages/PreviousRoobetPage";
+import AdminLeaderboardPage from "@/pages/AdminLeaderboardPage";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuthStore } from "@/store/useAuthStore";
@@ -44,8 +46,9 @@ function App() {
           
           {/* Roobet page */}
           <Route path='/Leaderboard' element={<RoobetPage />} />
-          <Route path='/PreviousLeaderboard' element={<Navigate to='/Leaderboard' replace />} />
+          <Route path='/PreviousLeaderboard' element={<PreviousRoobetPage />} />
           <Route path='/RoobetPage' element={<RoobetPage />} />
+          <Route path='/admin/roobet' element={<AdminLeaderboardPage />} />
           <Route path='/login' element={<LoginPage />} />
           <Route path='/signup' element={<SignupPage />} />
           <Route path='/slot' element={<SlotCallsPage />} />
