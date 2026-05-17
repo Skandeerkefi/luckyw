@@ -32,11 +32,15 @@ function getCountdownTarget(endDate: string) {
 
 const RoobetPage: React.FC = () => {
 	const {
-		leaderboard,
+		currentLeaderboard,
+		previousLeaderboard,
 		leaderboardConfig,
-		loading,
-		error,
+		currentLoading,
+		previousLoading,
+		currentError,
+		previousError,
 		fetchLeaderboard,
+		fetchPreviousLeaderboard,
 		fetchLeaderboardConfig,
 	} = useRoobetStore();
 
@@ -61,8 +65,12 @@ const RoobetPage: React.FC = () => {
 			return;
 		}
 
-		fetchLeaderboard(activeRange.startDate, activeRange.endDate);
-	}, [activeRange.endDate, activeRange.startDate, fetchLeaderboard, leaderboardConfig]);
+		if (mode === "current") {
+			fetchLeaderboard(activeRange.startDate, activeRange.endDate);
+		} else {
+			fetchPreviousLeaderboard(activeRange.startDate, activeRange.endDate);
+		}
+	}, [activeRange.endDate, activeRange.startDate, fetchLeaderboard, fetchPreviousLeaderboard, leaderboardConfig, mode]);
 
 	useEffect(() => {
 		const tick = () => {
@@ -88,7 +96,7 @@ const RoobetPage: React.FC = () => {
 		return () => clearInterval(interval);
 	}, [currentRange.endDate, mode]);
 
-	const topPlayers = leaderboard?.data?.slice(0, 15) ?? [];
+	const topPlayers = (mode === "current" ? currentLeaderboard : previousLeaderboard)?.data?.slice(0, 15) ?? [];
 
 	return (
 		<div className="relative flex min-h-screen flex-col overflow-hidden text-[#FFFBED]">
@@ -163,8 +171,8 @@ const RoobetPage: React.FC = () => {
 						</Button>
 					</div>
 
-					{loading && <p className="text-[#F1A82F]">Loading leaderboard…</p>}
-					{error && <p className="text-[#F9B97C]">{error}</p>}
+					{(mode === "current" ? currentLoading : previousLoading) && <p className="text-[#F1A82F]">Loading leaderboard…</p>}
+					{(mode === "current" ? currentError : previousError) && <p className="text-[#F9B97C]">{mode === "current" ? currentError : previousError}</p>}
 
 					{topPlayers.length > 0 ? (
 						<div className="mb-12 overflow-x-auto rounded-2xl border border-[#F1A82F]/20 bg-[#0F0F0F]/80 shadow-lg backdrop-blur-md">
@@ -215,7 +223,7 @@ const RoobetPage: React.FC = () => {
 								</tbody>
 							</table>
 						</div>
-					) : !loading && !error ? (
+					) : !(mode === "current" ? currentLoading : previousLoading) && !(mode === "current" ? currentError : previousError) ? (
 						<p className="mb-12 text-[#F1A82F]/70">No players in this period.</p>
 					) : null}
 				</main>

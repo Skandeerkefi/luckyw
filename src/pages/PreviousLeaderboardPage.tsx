@@ -74,7 +74,7 @@ const formatRangeLabel = () => {
 };
 
 const PreviousLeaderboardPage: React.FC = () => {
-  const { leaderboard, loading, error, fetchPreviousLeaderboard } = useRoobetStore();
+  const { previousLeaderboard, previousLoading, previousError, fetchPreviousLeaderboard } = useRoobetStore();
   const [showHowItWorks, setShowHowItWorks] = useState(false);
 
   const label = useMemo(() => formatRangeLabel(), []);
@@ -84,7 +84,7 @@ const PreviousLeaderboardPage: React.FC = () => {
     fetchPreviousLeaderboard(startDate, endDate);
   }, [fetchPreviousLeaderboard]);
 
-  const players = leaderboard?.data?.slice(0, 10) || [];
+  const players = previousLeaderboard?.data?.slice(0, 10) || [];
 
   return (
     <div className="relative flex flex-col min-h-screen text-[#FFFBED] overflow-hidden">
@@ -122,8 +122,8 @@ const PreviousLeaderboardPage: React.FC = () => {
             </Button>
           </div>
 
-          {loading && <p className="text-[#F1A82F]">Loading leaderboard...</p>}
-          {error && <p className="text-[#F9B97C]">{error}</p>}
+          {previousLoading && <p className="text-[#F1A82F]">Loading leaderboard...</p>}
+          {previousError && <p className="text-[#F9B97C]">{previousError}</p>}
 
           {players.length > 0 && (
             <div className="overflow-x-auto">

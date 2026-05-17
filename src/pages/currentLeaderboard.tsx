@@ -11,10 +11,10 @@ import {
 
 export const CurrentLeaderboard = () => {
 	const {
-		leaderboard,
+		currentLeaderboard,
 		leaderboardConfig,
-		loading,
-		error,
+		currentLoading,
+		currentError,
 		fetchLeaderboard,
 		fetchLeaderboardConfig,
 	} = useRoobetStore();
@@ -37,19 +37,19 @@ export const CurrentLeaderboard = () => {
 	const currentRange = leaderboardConfig?.current ?? buildDefaultCurrentRange();
 	const prizeByRank = getPrizeAmountByRank(currentRange.prizeSplit);
 	const totalPrize = getTotalPrize(currentRange.prizeSplit);
-	const topPlayers = leaderboard?.data?.slice(0, 3) ?? [];
+	const topPlayers = currentLeaderboard?.data?.slice(0, 3) ?? [];
 	const podiumOrder =
 		topPlayers.length === 3 ? [topPlayers[1], topPlayers[0], topPlayers[2]] : topPlayers;
 
-	if (loading) {
+	if (currentLoading) {
 		return <p className="text-center text-lg text-white/70">Loading leaderboard…</p>;
 	}
 
-	if (error) {
-		return <p className="text-center text-red-400">{error}</p>;
+	if (currentError) {
+		return <p className="text-center text-red-400">{currentError}</p>;
 	}
 
-	if (!leaderboard?.data?.length) {
+	if (!currentLeaderboard?.data?.length) {
 		return <p className="text-center text-white/60">No leaderboard data available.</p>;
 	}
 

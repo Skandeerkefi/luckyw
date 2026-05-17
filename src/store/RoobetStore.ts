@@ -49,10 +49,13 @@ interface LeaderboardConfigResponse {
 }
 
 interface RoobetStore {
-  leaderboard: LeaderboardData | null;
+  currentLeaderboard: LeaderboardData | null;
+  previousLeaderboard: LeaderboardData | null;
   leaderboardConfig: LeaderboardConfigResponse | null;
-  loading: boolean;
-  error: string | null;
+  currentLoading: boolean;
+  previousLoading: boolean;
+  currentError: string | null;
+  previousError: string | null;
   fetchLeaderboard: (startDate: string, endDate: string) => Promise<void>;
   fetchPreviousLeaderboard: (startDate: string, endDate: string) => Promise<void>;
   fetchLeaderboardConfig: () => Promise<LeaderboardConfigResponse | null>;
@@ -86,10 +89,13 @@ function getErrorMessage(error: unknown, fallback: string): string {
 }
 
 export const useRoobetStore = create<RoobetStore>((set) => ({
-  leaderboard: null,
+  currentLeaderboard: null,
+  previousLeaderboard: null,
   leaderboardConfig: null,
-  loading: false,
-  error: null,
+  currentLoading: false,
+  previousLoading: false,
+  currentError: null,
+  previousError: null,
 
   fetchLeaderboardConfig: async () => {
     try {
@@ -99,13 +105,13 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
       set({ leaderboardConfig: config });
       return config;
     } catch (err: unknown) {
-      set({ error: getErrorMessage(err, "Failed to fetch leaderboard config") });
+      set({ currentError: getErrorMessage(err, "Failed to fetch leaderboard config") });
       return null;
     }
   },
 
   fetchLeaderboard: async (startDate: string, endDate: string) => {
-    set({ loading: true, error: null });
+    set({ currentLoading: true, currentError: null });
 
     try {
       const response = await axios.get(
@@ -116,17 +122,17 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
         response.data as LeaderboardApiResponse
       );
 
-      set({ leaderboard: updatedData, loading: false });
+      set({ currentLeaderboard: updatedData, currentLoading: false });
     } catch (err: unknown) {
       set({
-        error: getErrorMessage(err, "Failed to fetch leaderboard"),
-        loading: false,
+        currentError: getErrorMessage(err, "Failed to fetch leaderboard"),
+        currentLoading: false,
       });
     }
   },
 
   fetchPreviousLeaderboard: async (startDate: string, endDate: string) => {
-    set({ loading: true, error: null });
+    set({ previousLoading: true, previousError: null });
 
     try {
       const response = await axios.get(buildApiUrl("/api/leaderboard/previous"), { params: { startDate, endDate } });
@@ -135,11 +141,11 @@ export const useRoobetStore = create<RoobetStore>((set) => ({
         response.data as LeaderboardApiResponse
       );
 
-      set({ leaderboard: updatedData, loading: false });
+      set({ previousLeaderboard: updatedData, previousLoading: false });
     } catch (err: unknown) {
       set({
-        error: getErrorMessage(err, "Failed to fetch previous leaderboard"),
-        loading: false,
+        previousError: getErrorMessage(err, "Failed to fetch previous leaderboard"),
+        previousLoading: false,
       });
     }
   },

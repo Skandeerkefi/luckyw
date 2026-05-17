@@ -22,10 +22,10 @@ import {
 
 const PreviousRoobetPage: React.FC = () => {
 	const {
-		leaderboard,
+		previousLeaderboard,
 		leaderboardConfig,
-		loading,
-		error,
+		previousLoading,
+		previousError,
 		fetchPreviousLeaderboard,
 		fetchLeaderboardConfig,
 	} = useRoobetStore();
@@ -50,7 +50,7 @@ const PreviousRoobetPage: React.FC = () => {
 		fetchPreviousLeaderboard(previousRange.startDate, previousRange.endDate);
 	}, [fetchPreviousLeaderboard, leaderboardConfig, previousRange.endDate, previousRange.startDate]);
 
-	const topPlayers = leaderboard?.data?.slice(0, 15) ?? [];
+	const topPlayers = previousLeaderboard?.data?.slice(0, 15) ?? [];
 
 	return (
 		<div className="relative flex min-h-screen flex-col overflow-hidden text-[#FFFBED]">
@@ -89,8 +89,8 @@ const PreviousRoobetPage: React.FC = () => {
 						</Button>
 					</div>
 
-					{loading && <p className="text-[#F1A82F]">Loading leaderboard…</p>}
-					{error && <p className="text-[#F9B97C]">{error}</p>}
+					{previousLoading && <p className="text-[#F1A82F]">Loading leaderboard…</p>}
+					{previousError && <p className="text-[#F9B97C]">{previousError}</p>}
 
 					{topPlayers.length > 0 ? (
 						<div className="mb-12 overflow-x-auto rounded-2xl border border-[#F1A82F]/20 bg-[#0F0F0F]/80 shadow-lg backdrop-blur-md">

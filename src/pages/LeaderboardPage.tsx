@@ -27,7 +27,7 @@ function getCurrentRange() {
 }
 
 const LeaderboardPage: React.FC = () => {
-    const { leaderboard, loading, error, fetchLeaderboard } = useRoobetStore();
+    const { currentLeaderboard, currentLoading, currentError, fetchLeaderboard } = useRoobetStore();
 
     useEffect(() => {
         const { startDate, endDate } = getCurrentRange();
@@ -61,7 +61,7 @@ const LeaderboardPage: React.FC = () => {
         return () => clearInterval(interval);
     }, []);
 
-    const top3 = leaderboard?.data?.slice(0, 3) || [];
+    const top3 = currentLeaderboard?.data?.slice(0, 3) || [];
     const podiumOrder = [top3[1], top3[0], top3[2]];
 
     const socialLinks = [
@@ -192,9 +192,9 @@ const LeaderboardPage: React.FC = () => {
                         <p className='text-sm bg-[#efae0e]/10 p-3 rounded-lg border-l-4 border-[#efae0e]'>
                             Only Slots and Provably Fair (house games) count, Dice is excluded.
                         </p>
-                        {leaderboard?.disclosure && (
+                        {currentLeaderboard?.disclosure && (
                             <p className='text-xs bg-[#efae0e]/10 p-3 rounded-lg border border-[#efae0e]/20'>
-                                {leaderboard.disclosure}
+                                {currentLeaderboard.disclosure}
                             </p>
                         )}
                     </CardContent>
@@ -219,9 +219,9 @@ const LeaderboardPage: React.FC = () => {
                         </p>
                     </div>
 
-                    {loading && <p className='text-center'>Loading leaderboard...</p>}
-                    {error && (
-                        <p className='text-center text-red-400'>{error}</p>
+                    {currentLoading && <p className='text-center'>Loading leaderboard...</p>}
+                    {currentError && (
+                        <p className='text-center text-red-400'>{currentError}</p>
                     )}
 
                     <div className='grid items-end gap-6 md:grid-cols-3'>
