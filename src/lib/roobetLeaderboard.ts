@@ -26,6 +26,8 @@ export const DEFAULT_PRIZE_SPLIT: PrizeSplitEntry[] = [
 	{ rank: 8, amount: 100 },
 	{ rank: 9, amount: 75 },
 	{ rank: 10, amount: 50 },
+	{ rank: 10, amount: 50 },
+	{ rank: 10, amount: 50 },
 ];
 
 export function toDateOnlyUtc(date: Date): string {

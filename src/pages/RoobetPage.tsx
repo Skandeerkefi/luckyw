@@ -96,7 +96,7 @@ const RoobetPage: React.FC = () => {
 		return () => clearInterval(interval);
 	}, [currentRange.endDate, mode]);
 
-	const topPlayers = (mode === "current" ? currentLeaderboard : previousLeaderboard)?.data?.slice(0, 15) ?? [];
+	const topPlayers = (mode === "current" ? currentLeaderboard : previousLeaderboard)?.data?.slice(0, 20) ?? [];
 
 	return (
 		<div className="relative flex min-h-screen flex-col overflow-hidden text-[#FFFBED]">
@@ -112,7 +112,7 @@ const RoobetPage: React.FC = () => {
 			<div className="relative z-10">
 				<Navbar />
 
-				<main className="mx-auto w-full max-w-7xl flex-grow px-6 py-12 text-center">
+				<main className="flex-grow w-full px-6 py-12 mx-auto text-center max-w-7xl">
 					<h1 className="mb-2 text-4xl font-extrabold text-[#F1A82F] md:text-5xl">
 						💰 {mode === "current" ? "CURRENT" : "PREVIOUS"} LEADERBOARD 💰
 					</h1>
@@ -120,7 +120,7 @@ const RoobetPage: React.FC = () => {
 					<p className="mb-2 text-lg text-[#F1A82F]/80">{formatRangeLabel(activeRange)}</p>
 					<p className="mb-8 text-sm text-[#F1A82F]/70">Total Prize Pool: ${formatMoney(totalPrize)}</p>
 
-					<div className="mb-8 flex justify-center gap-3">
+					<div className="flex justify-center gap-3 mb-8">
 						<Button
 							className={
 								mode === "current"
@@ -155,7 +155,7 @@ const RoobetPage: React.FC = () => {
 						</div>
 					) : null}
 
-					<div className="mb-10 flex items-center justify-center gap-4">
+					<div className="flex items-center justify-center gap-4 mb-10">
 						<Button
 							className="rounded-full bg-[#F1A82F] px-6 py-3 font-semibold text-[#0F0F0F] shadow-lg hover:bg-[#F9B97C]"
 							onClick={() => window.open("https://roobet.com/?ref=luckyw", "_blank", "noopener noreferrer")}
@@ -167,7 +167,7 @@ const RoobetPage: React.FC = () => {
 							className="flex items-center gap-2 rounded-full border border-[#F1A82F] px-6 py-3 font-semibold text-[#F1A82F] hover:bg-[#F1A82F]/10"
 							onClick={() => setShowHowItWorks(true)}
 						>
-							<Info className="h-4 w-4" /> How It Works
+							<Info className="w-4 h-4" /> How It Works
 						</Button>
 					</div>
 
@@ -190,15 +190,15 @@ const RoobetPage: React.FC = () => {
 									{topPlayers.map((player) => {
 										const rank = player.rankLevel;
 										const rankColor =
-											rank === 1
-												? "bg-yellow-400 text-black"
-												: rank === 2
-												? "bg-gray-400 text-black"
-												: rank === 3
-												? "bg-yellow-700 text-white"
-												: rank <= 10
-												? "bg-[#F1A82F]/20 text-[#F1A82F]"
-												: "bg-white/10 text-white/60";
+	rank === 1
+		? "bg-yellow-400 text-black"
+		: rank === 2
+		? "bg-gray-400 text-black"
+		: rank === 3
+		? "bg-yellow-700 text-white"
+		: rank <= 12
+		? "bg-[#F1A82F]/20 text-[#F1A82F]"
+		: "bg-white/10 text-white/60";
 
 										return (
 											<tr key={player.uid} className="border-t border-[#F9B97C]/20 transition hover:bg-[#F9B97C]/10">
@@ -208,7 +208,7 @@ const RoobetPage: React.FC = () => {
 													</span>
 												</td>
 
-												<td className="truncate p-4 font-semibold text-center">{maskUsername(player.username)}</td>
+												<td className="p-4 font-semibold text-center truncate">{maskUsername(player.username)}</td>
 
 												<td className="p-4 text-right font-mono text-[#F9B97C]">
 													${formatMoney(Number(player.weightedWagered))}

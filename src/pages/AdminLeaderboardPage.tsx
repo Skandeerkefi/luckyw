@@ -18,7 +18,7 @@ type PrizeRow = {
 };
 
 const emptyPrizeRows = (): PrizeRow[] =>
-	Array.from({ length: 10 }, (_, index) => ({ rank: index + 1, amount: "0" }));
+	Array.from({ length: 12 }, (_, index) => ({ rank: index + 1, amount: "0" }));
 
 const AdminLeaderboardPage = () => {
 	const { user, token } = useAuthStore();
@@ -32,6 +32,7 @@ const AdminLeaderboardPage = () => {
 	const [saving, setSaving] = useState(false);
 	const [message, setMessage] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
+const rows = emptyPrizeRows();
 
 	useEffect(() => {
 		if (!leaderboardConfig) {
@@ -49,14 +50,13 @@ const AdminLeaderboardPage = () => {
 		setEndDate(current.endDate);
 		setPreviousStartDate(leaderboardConfig.previous?.startDate ?? "");
 		setPreviousEndDate(leaderboardConfig.previous?.endDate ?? "");
-		setPrizeRows(
-			current.prizeSplit.length > 0
-				? current.prizeSplit.map((entry, index) => ({
-					rank: entry.rank || index + 1,
-					amount: String(entry.amount ?? 0),
-				}))
-				: emptyPrizeRows()
-		);
+		current.prizeSplit.forEach((entry) => {
+	if (entry.rank >= 1 && entry.rank <= rows.length) {
+		rows[entry.rank - 1].amount = String(entry.amount ?? 0);
+	}
+});
+
+setPrizeRows(rows);
 	}, [leaderboardConfig]);
 
 	const isAdmin = user?.role === "admin";
@@ -74,9 +74,9 @@ const AdminLeaderboardPage = () => {
 				<div className="fixed inset-0 z-0 bg-gradient-to-b from-black via-black/95 to-black" />
 				<div className="relative z-10">
 					<Navbar />
-					<main className="mx-auto flex max-w-4xl flex-grow items-center justify-center px-6 py-20 text-center">
+					<main className="flex items-center justify-center flex-grow max-w-4xl px-6 py-20 mx-auto text-center">
 						<Card className="w-full border border-[#F1A82F]/30 bg-[#0F0F0F]/90">
-							<CardContent className="space-y-3 py-10">
+							<CardContent className="py-10 space-y-3">
 								<Crown className="mx-auto h-12 w-12 text-[#F1A82F]" />
 								<h1 className="text-3xl font-bold text-[#F1A82F]">Admin access required</h1>
 								<p className="text-white/70">You need an admin account to manage the Roobet leaderboard.</p>
@@ -150,8 +150,8 @@ const AdminLeaderboardPage = () => {
 			<div className="relative z-10">
 				<Navbar />
 
-				<main className="mx-auto w-full max-w-7xl px-6 py-10">
-					<div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+				<main className="w-full px-6 py-10 mx-auto max-w-7xl">
+					<div className="flex flex-wrap items-center justify-between gap-4 mb-8">
 						<div>
 							<h1 className="text-4xl font-extrabold text-[#F1A82F]">Roobet Leaderboard Admin</h1>
 							<p className="mt-2 text-[#F1A82F]/70">Publish the current period, choose the previous period, and edit prize splits.</p>
@@ -159,13 +159,13 @@ const AdminLeaderboardPage = () => {
 						<Badge className="bg-[#F1A82F]/15 px-4 py-2 text-[#F1A82F]">{formatMoney(totalPrize)} total prize</Badge>
 					</div>
 
-					{message ? <div className="mb-6 rounded-xl border border-green-500/30 bg-green-500/10 px-4 py-3 text-green-200">{message}</div> : null}
-					{error ? <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-red-200">{error}</div> : null}
+					{message ? <div className="px-4 py-3 mb-6 text-green-200 border rounded-xl border-green-500/30 bg-green-500/10">{message}</div> : null}
+					{error ? <div className="px-4 py-3 mb-6 text-red-200 border rounded-xl border-red-500/30 bg-red-500/10">{error}</div> : null}
 
 					<div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
 						<Card className="border border-[#F1A82F]/20 bg-[#0F0F0F]/90">
 							<CardHeader>
-								<CardTitle className="flex items-center gap-2 text-[#F1A82F]"><Save className="h-5 w-5" /> Active period</CardTitle>
+								<CardTitle className="flex items-center gap-2 text-[#F1A82F]"><Save className="w-5 h-5" /> Active period</CardTitle>
 							</CardHeader>
 							<CardContent className="grid gap-4 md:grid-cols-2">
 								<div className="space-y-2">
@@ -182,7 +182,7 @@ const AdminLeaderboardPage = () => {
 									Archive the current leaderboard into previous when saving this period.
 								</label>
 
-								<div className="md:col-span-2 flex flex-wrap gap-3">
+								<div className="flex flex-wrap gap-3 md:col-span-2">
 									<Button onClick={handleSave} disabled={saving} className="bg-[#F1A82F] text-black hover:bg-[#F9B97C]">
 										{saving ? "Saving…" : "Save leaderboard"}
 									</Button>
@@ -245,7 +245,7 @@ const AdminLeaderboardPage = () => {
 						</Card>
 					</div>
 
-					<div className="mt-6 grid gap-6 lg:grid-cols-2">
+					<div className="grid gap-6 mt-6 lg:grid-cols-2">
 						<Card className="border border-[#F1A82F]/20 bg-[#0F0F0F]/90">
 							<CardHeader>
 								<CardTitle className="text-[#F1A82F]">Current snapshot</CardTitle>
