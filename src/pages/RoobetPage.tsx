@@ -302,13 +302,13 @@ const RoobetPage: React.FC = () => {
 							Games with an RTP of <strong>97% or less</strong> contribute <strong>100%</strong> of the amount wagered.
 						</p>
 						<p>
-							Games with an RTP <strong>above 97% and below 98%</strong> contribute <strong>50%</strong> of the amount wagered.
+							Games with an RTP between <strong>97.01% and 98.99%</strong> contribute <strong>50%</strong> of the amount wagered.
 						</p>
 						<p>
-							Games with an RTP of <strong>98% and above</strong> contribute <strong>10%</strong> of the amount wagered.
+							Games with an RTP of <strong>99% and above</strong> contribute <strong>10%</strong> of the amount wagered.
 						</p>
 						<p className="border-t border-[#F1A82F]/30 pt-3">
-							Only <strong>Slots</strong> and <strong>Provably Fair</strong> count (house games with <strong>Dice excluded</strong>).
+							All games including <strong>Dice</strong> now count towards the leaderboard.
 						</p>
 					</div>
 				</DialogContent>

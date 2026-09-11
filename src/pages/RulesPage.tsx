@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
@@ -20,32 +20,31 @@ const RulesPage = () => {
 
         <section className="px-6 py-24 text-center">
           <h2 className="text-5xl md:text-6xl font-extrabold text-[#F1A82F] mb-16 tracking-wide">
-            Leaderboard Rules 📜
+            Leaderboard Rules ðŸ“œ
           </h2>
 
           <div className="max-w-4xl mx-auto space-y-10 leading-relaxed text-left text-white/80">
             {/* Wagering Rules Card */}
             <div className="bg-black/70 p-10 rounded-3xl border border-[#F1A82F]/30 shadow-2xl space-y-6">
               <h3 className="text-3xl font-bold text-[#F1A82F] mb-4">Wagering Rules</h3>
-              <p>Only <strong>Slots</strong> and <strong>House Games</strong> are eligible.</p>
-              <p>🚫 Dice, live games, and sports bets do not count.</p>
+              <p>All games including Slots, House Games, and Dice are eligible.</p>
               <p>The leaderboard is based on weighted wagered amounts.</p>
             </div>
 
             {/* Wager Contribution Card */}
             <div className="bg-black/70 p-10 rounded-3xl border border-[#F1A82F]/30 shadow-2xl space-y-6">
   <h3 className="text-3xl font-bold text-[#F1A82F] mb-4">Wager Contribution by RTP</h3>
-  <p>🎰 RTP ≤ 97% → <strong>100%</strong> of wager counts</p>
-  <p>🎯 RTP &gt; 97% → <strong>50%</strong> of wager counts</p>
-  <p>💎 RTP &gt;= 98% → <strong>10%</strong> of wager counts</p>
+  <p>ðŸŽ° RTP â‰¤ 97% â†’ <strong>100%</strong> of wager counts</p>
+  <p>ðŸŽ¯ RTP 97.01%â€“98.99% â†’ <strong>50%</strong> of wager counts</p>
+  <p>ðŸ’Ž RTP â‰¥ 99% â†’ <strong>10%</strong> of wager counts</p>
 </div>
 
 
             {/* Important Notes Card */}
             <div className="bg-black/70 p-10 rounded-3xl border border-[#F1A82F]/30 shadow-2xl space-y-6">
               <h3 className="text-3xl font-bold text-[#F1A82F] mb-4">Important Notes</h3>
-              <p>📅 You must be wagering under my referral to qualify.</p>
-              <p>💰 Prizes are paid directly to your Roobet account.</p>
+              <p>ðŸ“… You must be wagering under my referral to qualify.</p>
+              <p>ðŸ’° Prizes are paid directly to your Roobet account.</p>
             </div>
           </div>
         </section>
@@ -57,3 +56,5 @@ const RulesPage = () => {
 };
 
 export default RulesPage;
+
+

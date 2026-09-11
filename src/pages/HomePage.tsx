@@ -230,15 +230,15 @@ const HomePage = () => {
         🎯 RTP ≤ 97% → <span className="text-[#F1A82F]">100% weight</span>
       </p>
       <p className="text-2xl font-bold text-white">
-        🎯 RTP &gt; 97% → <span className="text-[#F1A82F]">50% weight</span>
+        🎯 RTP 97.01%–98.99% → <span className="text-[#F1A82F]">50% weight</span>
       </p>
       <p className="text-2xl font-bold text-white">
-        🎯 RTP ≥ 98% → <span className="text-[#F1A82F]">10% weight</span>
+        🎯 RTP ≥ 99% → <span className="text-[#F1A82F]">10% weight</span>
       </p>
     </div>
 
     <p className="mt-6 text-white/60">
-      Only Slots and Provably Fair (house games) count, and Dice is excluded.
+      All games count towards the leaderboard, including Dice.
     </p>
   </div>
 </section>

@@ -176,21 +176,21 @@ const LeaderboardPage: React.FC = () => {
                             <div className='flex items-center gap-3 p-3 bg-[#efae0e]/10 rounded-lg'>
                                 <div className='w-3 h-3 bg-yellow-400 rounded-full' />
                                 <span>
-                                    <strong>RTP &gt; 97%</strong> →{" "}
+                                    <strong>RTP 97.01%–98.99%</strong> →{" "}
                                     <strong className='text-[#efae0e]'>50%</strong>
                                 </span>
                             </div>
                             <div className='flex items-center gap-3 p-3 bg-[#efae0e]/10 rounded-lg'>
                                 <div className='w-3 h-3 bg-orange-400 rounded-full' />
                                 <span>
-                                    <strong>RTP ≥ 98%</strong> →{" "}
+                                    <strong>RTP ≥ 99%</strong> →{" "}
                                     <strong className='text-[#efae0e]'>10%</strong>
                                 </span>
                             </div>
                         </div>
 
                         <p className='text-sm bg-[#efae0e]/10 p-3 rounded-lg border-l-4 border-[#efae0e]'>
-                            Only Slots and Provably Fair (house games) count, Dice is excluded.
+                            All games including Dice now count towards the leaderboard.
                         </p>
                         {currentLeaderboard?.disclosure && (
                             <p className='text-xs bg-[#efae0e]/10 p-3 rounded-lg border border-[#efae0e]/20'>

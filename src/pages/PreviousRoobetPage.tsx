@@ -134,9 +134,9 @@ const PreviousRoobetPage: React.FC = () => {
 					</DialogHeader>
 					<div className="space-y-3 text-sm">
 						<p>RTP &lt;= 97% -&gt; <strong>100%</strong> weight</p>
-						<p>RTP &gt; 97% -&gt; <strong>50%</strong> weight</p>
-						<p>RTP &gt;= 98% -&gt; <strong>10%</strong> weight</p>
-						<p className="border-t border-[#F1A82F]/30 pt-3">Slots and Provably Fair count, Dice excluded.</p>
+						<p>RTP 97.01%–98.99% -&gt; <strong>50%</strong> weight</p>
+						<p>RTP &gt;= 99% -&gt; <strong>10%</strong> weight</p>
+						<p className="border-t border-[#F1A82F]/30 pt-3">All games including Dice now count towards the leaderboard.</p>
 					</div>
 				</DialogContent>
 			</Dialog>
