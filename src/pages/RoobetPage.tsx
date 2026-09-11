@@ -23,11 +23,15 @@ import {
 
 type Mode = "current" | "previous";
 
-function getCountdownTarget(endDate: string) {
-	const end = new Date(`${endDate}T00:00:00.000Z`);
-	const nextDay = new Date(end);
-	nextDay.setUTCDate(nextDay.getUTCDate() + 1);
-	return nextDay;
+function getResetTime() {
+	const now = new Date();
+	const year = now.getUTCFullYear();
+	const month = now.getUTCMonth();
+	// Leaderboard resets at noon UTC on the 10th of the next month
+	let targetMonth = month + 1;
+	let targetYear = year;
+	if (targetMonth > 11) { targetMonth = 0; targetYear++; }
+	return new Date(Date.UTC(targetYear, targetMonth, 10, 12, 0, 0, 0));
 }
 
 const RoobetPage: React.FC = () => {
@@ -80,7 +84,7 @@ const RoobetPage: React.FC = () => {
 				return;
 			}
 
-			const endTime = getCountdownTarget(currentRange.endDate).getTime();
+			const endTime = getResetTime().getTime();
 			const diff = Math.max(0, endTime - Date.now());
 			const total = Math.floor(diff / 1000);
 
@@ -95,7 +99,7 @@ const RoobetPage: React.FC = () => {
 		tick();
 		const interval = setInterval(tick, 1000);
 		return () => clearInterval(interval);
-	}, [currentRange.endDate, mode]);
+	}, [mode]);
 
 	// Reset search whenever the user switches between current/previous leaderboards
 	useEffect(() => {

@@ -41,7 +41,11 @@ const LeaderboardPage: React.FC = () => {
             const now = new Date();
             const year = now.getUTCFullYear();
             const month = now.getUTCMonth();
-            const endOfMonth = new Date(Date.UTC(year, month + 1, 1, 0, 0, 0, 0));
+            // Countdown to the 10th of the next month at noon UTC (the actual leaderboard reset time)
+            let targetMonth = month + 1;
+            let targetYear = year;
+            if (targetMonth > 11) { targetMonth = 0; targetYear++; }
+            const endOfMonth = new Date(Date.UTC(targetYear, targetMonth, 10, 12, 0, 0, 0));
             const diff = endOfMonth.getTime() - now.getTime();
 
             const days = Math.floor(diff / (1000 * 60 * 60 * 24));
