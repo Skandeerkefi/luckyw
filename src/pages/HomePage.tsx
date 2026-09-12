@@ -238,7 +238,7 @@ const HomePage = () => {
     </div>
 
     <p className="mt-6 text-white/60">
-      Only slots count towards the leaderboard.
+      Only Dice is excluded from the leaderboard.
     </p>
   </div>
 </section>
