@@ -194,7 +194,7 @@ const LeaderboardPage: React.FC = () => {
                         </div>
 
                         <p className='text-sm bg-[#efae0e]/10 p-3 rounded-lg border-l-4 border-[#efae0e]'>
-                            All games including Dice now count towards the leaderboard.
+                            Only slots count towards the leaderboard.
                         </p>
                         {currentLeaderboard?.disclosure && (
                             <p className='text-xs bg-[#efae0e]/10 p-3 rounded-lg border border-[#efae0e]/20'>

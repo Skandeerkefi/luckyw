@@ -238,7 +238,7 @@ const HomePage = () => {
     </div>
 
     <p className="mt-6 text-white/60">
-      All games count towards the leaderboard, including Dice.
+      Only slots count towards the leaderboard.
     </p>
   </div>
 </section>

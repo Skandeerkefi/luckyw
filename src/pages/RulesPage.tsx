@@ -27,7 +27,7 @@ const RulesPage = () => {
             {/* Wagering Rules Card */}
             <div className="bg-black/70 p-10 rounded-3xl border border-[#F1A82F]/30 shadow-2xl space-y-6">
               <h3 className="text-3xl font-bold text-[#F1A82F] mb-4">Wagering Rules</h3>
-              <p>All games including Slots, House Games, and Dice are eligible.</p>
+              <p>All games including Slots are eligible.</p>
               <p>The leaderboard is based on raw wagered amounts (pre-weighted by RTP).</p>
             </div>
 
