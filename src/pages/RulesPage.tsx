@@ -45,6 +45,12 @@ const RulesPage = () => {
               <p>📌 You must be wagering under the correct referral to qualify.</p>
               <p>💰 Prizes are paid directly to your Roobet account.</p>
             </div>
+
+            {/* Abuse Policy Card */}
+            <div className="bg-black/70 p-10 rounded-3xl border border-red-500/30 shadow-2xl space-y-6">
+              <h3 className="text-3xl font-bold text-red-400 mb-4">⚠️ Abuse Policy</h3>
+              <p className="text-white/80">Any abuse detected by Luckyw or Roobet may result in your prize being forfeited.</p>
+            </div>
           </div>
         </section>
 

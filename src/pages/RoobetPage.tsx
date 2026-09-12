@@ -314,6 +314,9 @@ const RoobetPage: React.FC = () => {
 						<p className="border-t border-[#F1A82F]/30 pt-3">
 							This is a <strong>Bi-Weekly Leaderboard</strong> with fresh rankings every 15 days. The current period runs from <strong>09/08/2026 to 09/22/2026</strong>.
 						</p>
+						<p className="border-t border-red-500/30 pt-3 text-red-400">
+							⚠️ Any abuse found by Luckyw or Roobet may result in your prize being forfeited.
+						</p>
 					</div>
 				</DialogContent>
 			</Dialog>
