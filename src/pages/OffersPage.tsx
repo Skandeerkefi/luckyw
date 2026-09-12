@@ -6,10 +6,10 @@ import { motion } from "framer-motion";
 const OffersPage = () => {
   const offers = [
     {
-      title: "Monthly Leaderboard",
+      title: "Bi-Weekly Leaderboard",
       icon: "🏆",
       description: "See rules for Details",
-      statsMain: "$3500",
+      statsMain: "$3000",
       statsSub: "Total Prize Pool",
       extraInfo: ["Paid out at the end of the each Leaderboard"],
       badge: "POPULAR",

@@ -28,22 +28,22 @@ const RulesPage = () => {
             <div className="bg-black/70 p-10 rounded-3xl border border-[#F1A82F]/30 shadow-2xl space-y-6">
               <h3 className="text-3xl font-bold text-[#F1A82F] mb-4">Wagering Rules</h3>
               <p>All games including Slots, House Games, and Dice are eligible.</p>
-              <p>The leaderboard is based on weighted wagered amounts.</p>
+              <p>The leaderboard is based on raw wagered amounts (pre-weighted by RTP).</p>
             </div>
 
             {/* Wager Contribution Card */}
             <div className="bg-black/70 p-10 rounded-3xl border border-[#F1A82F]/30 shadow-2xl space-y-6">
   <h3 className="text-3xl font-bold text-[#F1A82F] mb-4">Wager Contribution by RTP</h3>
-  <p>ðŸŽ° RTP â‰¤ 97% â†’ <strong>100%</strong> of wager counts</p>
+  <p>🎰 RTP ≤ 97% â†’ <strong>100%</strong> of wager counts</p>
   <p>ðŸŽ¯ RTP 97.01%â€“98.99% â†’ <strong>50%</strong> of wager counts</p>
-  <p>ðŸ’Ž RTP â‰¥ 99% â†’ <strong>10%</strong> of wager counts</p>
+  <p>ðŸ’Ž RTP ≥ 99% â†’ <strong>10%</strong> of wager counts</p>
 </div>
 
 
             {/* Important Notes Card */}
             <div className="bg-black/70 p-10 rounded-3xl border border-[#F1A82F]/30 shadow-2xl space-y-6">
               <h3 className="text-3xl font-bold text-[#F1A82F] mb-4">Important Notes</h3>
-              <p>ðŸ“… You must be wagering under my referral to qualify.</p>
+              <p>ðŸ“… You must be wagering under the correct referral to qualify.</p>
               <p>ðŸ’° Prizes are paid directly to your Roobet account.</p>
             </div>
           </div>

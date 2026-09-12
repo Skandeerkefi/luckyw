@@ -25,13 +25,13 @@ type Mode = "current" | "previous";
 
 function getResetTime() {
 	const now = new Date();
-	const year = now.getUTCFullYear();
-	const month = now.getUTCMonth();
-	// Leaderboard resets at noon UTC on the 10th of the next month
-	let targetMonth = month + 1;
-	let targetYear = year;
-	if (targetMonth > 11) { targetMonth = 0; targetYear++; }
-	return new Date(Date.UTC(targetYear, targetMonth, 10, 12, 0, 0, 0));
+	const nowMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+	const cycleStart = new Date(Date.UTC(2026, 8, 8)); // 09/08/2026
+	const cycleLength = 15 * 86400000;
+	const diff = nowMs - cycleStart.getTime();
+	const cycleNum = Math.floor(diff / cycleLength);
+	const start = new Date(cycleStart.getTime() + cycleNum * cycleLength);
+	return new Date(start.getTime() + 15 * 86400000);
 }
 
 const RoobetPage: React.FC = () => {
@@ -112,7 +112,7 @@ const RoobetPage: React.FC = () => {
 
 	const topPlayers = useMemo(() => {
 		if (!normalizedSearch) {
-			return fullLeaderboard.slice(0, 20);
+			return fullLeaderboard.slice(0, 25);
 		}
 
 		// Match against the real username (never the masked one), so search
@@ -253,9 +253,9 @@ const RoobetPage: React.FC = () => {
 												? "bg-gray-400 text-black"
 												: rank === 3
 												? "bg-yellow-700 text-white"
-												: rank <= 12
+												: rank <= 15
 												? "bg-[#F1A82F]/20 text-[#F1A82F]"
-												: "bg-white/10 text-white/60";
+												: "bg-white/10 text-white/40";
 
 										return (
 											<tr key={player.uid} className="border-t border-[#F9B97C]/20 transition hover:bg-[#F9B97C]/10">
@@ -268,7 +268,7 @@ const RoobetPage: React.FC = () => {
 												<td className="p-4 font-semibold text-center truncate">{maskUsername(player.username)}</td>
 
 												<td className="p-4 text-right font-mono text-[#F9B97C]">
-													${formatMoney(Number(player.weightedWagered))}
+													${formatMoney(Number(player.wagered))}
 												</td>
 
 												<td className="p-4 text-right font-bold text-[#F1A82F]">
@@ -297,7 +297,7 @@ const RoobetPage: React.FC = () => {
 							How the Leaderboard Works
 						</DialogTitle>
 						<DialogDescription className="text-center text-[#F1A82F]/80">
-							Your wagers on Roobet count toward the leaderboard with RTP-based weighting.
+							Your raw wagers on Roobet count toward the leaderboard with RTP-based weighting.
 						</DialogDescription>
 					</DialogHeader>
 
@@ -312,7 +312,7 @@ const RoobetPage: React.FC = () => {
 							Games with an RTP of <strong>99% and above</strong> contribute <strong>10%</strong> of the amount wagered.
 						</p>
 						<p className="border-t border-[#F1A82F]/30 pt-3">
-							All games including <strong>Dice</strong> now count towards the leaderboard.
+							This is a <strong>Bi-Weekly Leaderboard</strong> with fresh rankings every 15 days. The current period runs from <strong>09/08/2026 to 09/22/2026</strong>.
 						</p>
 					</div>
 				</DialogContent>

@@ -16,18 +16,21 @@ export type LeaderboardConfigResponse = {
 };
 
 export const DEFAULT_PRIZE_SPLIT: PrizeSplitEntry[] = [
-	{ rank: 1, amount: 800 },
-	{ rank: 2, amount: 550 },
-	{ rank: 3, amount: 325 },
-	{ rank: 4, amount: 200 },
-	{ rank: 5, amount: 150 },
-	{ rank: 6, amount: 125 },
-	{ rank: 7, amount: 125 },
-	{ rank: 8, amount: 100 },
-	{ rank: 9, amount: 75 },
-	{ rank: 10, amount: 50 },
-	{ rank: 10, amount: 50 },
-	{ rank: 10, amount: 50 },
+	{ rank: 1, amount: 600 },
+	{ rank: 2, amount: 450 },
+	{ rank: 3, amount: 350 },
+	{ rank: 4, amount: 275 },
+	{ rank: 5, amount: 225 },
+	{ rank: 6, amount: 200 },
+	{ rank: 7, amount: 175 },
+	{ rank: 8, amount: 150 },
+	{ rank: 9, amount: 125 },
+	{ rank: 10, amount: 100 },
+	{ rank: 11, amount: 90 },
+	{ rank: 12, amount: 80 },
+	{ rank: 13, amount: 70 },
+	{ rank: 14, amount: 60 },
+	{ rank: 15, amount: 50 },
 ];
 
 export function toDateOnlyUtc(date: Date): string {
@@ -36,16 +39,14 @@ export function toDateOnlyUtc(date: Date): string {
 
 export function buildDefaultCurrentRange(): LeaderboardWindowConfig {
 	const now = new Date();
-	const year = now.getUTCFullYear();
-	const month = now.getUTCMonth();
-	const day = now.getUTCDate();
+	const nowMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+	const cycleStart = new Date(Date.UTC(2026, 8, 8)); // 09/08/2026
+	const cycleLength = 15 * 86400000;
 
-	const start =
-		day >= 11
-			? new Date(Date.UTC(year, month, 11, 0, 0, 0, 0))
-			: new Date(Date.UTC(year, month - 1, 11, 0, 0, 0, 0));
-	const end = new Date(start);
-	end.setUTCMonth(end.getUTCMonth() + 1);
+	const diff = nowMs - cycleStart.getTime();
+	const cycleNum = Math.floor(diff / cycleLength);
+	const start = new Date(cycleStart.getTime() + cycleNum * cycleLength);
+	const end = new Date(start.getTime() + (15 - 1) * 86400000);
 
 	return {
 		startDate: toDateOnlyUtc(start),
@@ -60,7 +61,7 @@ export function buildDefaultPreviousRange(): LeaderboardWindowConfig {
 	const previousEnd = new Date(currentStart);
 	previousEnd.setUTCDate(previousEnd.getUTCDate() - 1);
 	const previousStart = new Date(previousEnd);
-	previousStart.setUTCMonth(previousStart.getUTCMonth() - 1);
+	previousStart.setUTCDate(previousStart.getUTCDate() - 15 + 1);
 
 	return {
 		startDate: toDateOnlyUtc(previousStart),
@@ -84,7 +85,8 @@ export function formatRangeLabel(range: { startDate: string; endDate: string }) 
 	const start = new Date(`${range.startDate}T00:00:00.000Z`);
 	const end = new Date(`${range.endDate}T00:00:00.000Z`);
 
-	return `${start.getUTCMonth() + 1}/${start.getUTCDate()}-${end.getUTCMonth() + 1}/${end.getUTCDate()} Monthly Edition 🏆`;
+	const pad = (n: number) => String(n).padStart(2, "0");
+	return `${pad(start.getUTCMonth() + 1)}/${pad(start.getUTCDate())}/${start.getUTCFullYear()} - ${pad(end.getUTCMonth() + 1)}/${pad(end.getUTCDate())}/${end.getUTCFullYear()}`;
 }
 
 export function maskUsername(username: string): string {

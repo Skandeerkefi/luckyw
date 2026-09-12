@@ -18,18 +18,13 @@ function toDateOnlyUtc(d: Date) {
 
 function getCurrentRange() {
   const now = new Date();
-  const year = now.getUTCFullYear();
-  const month = now.getUTCMonth();
-  const day = now.getUTCDate();
-
-  const start =
-    day >= 11
-      ? new Date(Date.UTC(year, month, 11, 0, 0, 0, 0))
-      : new Date(Date.UTC(year, month - 1, 11, 0, 0, 0, 0));
-
-  const end = new Date(start);
-  end.setUTCMonth(end.getUTCMonth() + 1);
-
+  const nowMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  const cycleStart = new Date(Date.UTC(2026, 8, 8)); // 09/08/2026
+  const cycleLength = 15 * 86400000;
+  const diff = nowMs - cycleStart.getTime();
+  const cycleNum = Math.floor(diff / cycleLength);
+  const start = new Date(cycleStart.getTime() + cycleNum * cycleLength);
+  const end = new Date(start.getTime() + (15 - 1) * 86400000);
   return {
     startDate: toDateOnlyUtc(start),
     endDate: toDateOnlyUtc(end),
@@ -37,15 +32,12 @@ function getCurrentRange() {
 }
 
 function getPreviousRange() {
-  const { startDate } = getCurrentRange();
-  const currentStart = new Date(`${startDate}T00:00:00.000Z`);
-
+  const current = getCurrentRange();
+  const currentStart = new Date(`${current.startDate}T00:00:00.000Z`);
   const previousEnd = new Date(currentStart);
   previousEnd.setUTCDate(previousEnd.getUTCDate() - 1);
-
   const previousStart = new Date(previousEnd);
-  previousStart.setUTCMonth(previousStart.getUTCMonth() - 1);
-
+  previousStart.setUTCDate(previousStart.getUTCDate() - 15 + 1);
   return {
     startDate: toDateOnlyUtc(previousStart),
     endDate: toDateOnlyUtc(previousEnd),
@@ -54,15 +46,20 @@ function getPreviousRange() {
 
 const prizeByRank: Record<number, string> = {
   1: "$600",
-  2: "$350",
-  3: "$250",
-  4: "$200",
-  5: "$150",
-  6: "$120",
-  7: "$100",
-  8: "$90",
-  9: "$80",
-  10: "$60",
+  2: "$450",
+  3: "$350",
+  4: "$275",
+  5: "$225",
+  6: "$200",
+  7: "$175",
+  8: "$150",
+  9: "$125",
+  10: "$100",
+  11: "$90",
+  12: "$80",
+  13: "$70",
+  14: "$60",
+  15: "$50",
 };
 
 const formatRangeLabel = () => {
@@ -70,7 +67,7 @@ const formatRangeLabel = () => {
   const start = new Date(`${startDate}T00:00:00.000Z`);
   const end = new Date(`${endDate}T00:00:00.000Z`);
 
-  return `${start.getUTCMonth() + 1}/${start.getUTCDate()}-${end.getUTCMonth() + 1}/${end.getUTCDate()} Edition`;
+  return `${String(start.getUTCMonth() + 1).padStart(2, '0')}/${String(start.getUTCDate()).padStart(2, '0')}/${start.getUTCFullYear()} - ${String(end.getUTCMonth() + 1).padStart(2, '0')}/${String(end.getUTCDate()).padStart(2, '0')}/${end.getUTCFullYear()}`;
 };
 
 const PreviousLeaderboardPage: React.FC = () => {
@@ -84,7 +81,7 @@ const PreviousLeaderboardPage: React.FC = () => {
     fetchPreviousLeaderboard(startDate, endDate);
   }, [fetchPreviousLeaderboard]);
 
-  const players = previousLeaderboard?.data?.slice(0, 10) || [];
+  const players = previousLeaderboard?.data?.slice(0, 15) || [];
 
   return (
     <div className="relative flex flex-col min-h-screen text-[#FFFBED] overflow-hidden">
@@ -144,7 +141,7 @@ const PreviousLeaderboardPage: React.FC = () => {
                         <td className="p-4 text-center">#{rank}</td>
                         <td className="p-4 font-semibold text-center">{player.username}</td>
                         <td className="p-4 text-right text-[#F1A82F]/80">
-                          {Number(player.weightedWagered).toLocaleString(undefined, {
+                          {Number(player.wagered).toLocaleString(undefined, {
                             minimumFractionDigits: 2,
                             maximumFractionDigits: 2,
                           })}
@@ -170,15 +167,15 @@ const PreviousLeaderboardPage: React.FC = () => {
               How the Leaderboard Works
             </DialogTitle>
             <DialogDescription className="text-[#F1A82F]/80 text-center">
-              Weighted wagers based on RTP determine ranking.
+              Your raw wagers on Roobet count toward the leaderboard with RTP-based weighting.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm">
-            <p>RTP &lt;= 97% -&gt; <strong>100%</strong> weight</p>
-            <p>RTP 97.01%–98.99% -&gt; <strong>50%</strong> weight</p>
-            <p>RTP &gt;= 99% -&gt; <strong>10%</strong> weight</p>
+            <p>RTP ≤ 97% → <strong>100%</strong> of wager counts</p>
+            <p>RTP 97.01%–98.99% → <strong>50%</strong> of wager counts</p>
+            <p>RTP ≥ 99% → <strong>10%</strong> of wager counts</p>
             <p className="border-t border-[#F1A82F]/30 pt-3">
-              All games including Dice now count towards the leaderboard.
+              This is a <strong>Bi-Weekly Leaderboard</strong> with fresh rankings every 15 days.
             </p>
           </div>
         </DialogContent>

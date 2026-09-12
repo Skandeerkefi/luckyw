@@ -18,7 +18,7 @@ type PrizeRow = {
 };
 
 const emptyPrizeRows = (): PrizeRow[] =>
-	Array.from({ length: 12 }, (_, index) => ({ rank: index + 1, amount: "0" }));
+	Array.from({ length: 15 }, (_, index) => ({ rank: index + 1, amount: "0" }));
 
 const AdminLeaderboardPage = () => {
 	const { user, token } = useAuthStore();
@@ -32,7 +32,6 @@ const AdminLeaderboardPage = () => {
 	const [saving, setSaving] = useState(false);
 	const [message, setMessage] = useState<string | null>(null);
 	const [error, setError] = useState<string | null>(null);
-const rows = emptyPrizeRows();
 
 	useEffect(() => {
 		if (!leaderboardConfig) {
@@ -51,12 +50,14 @@ const rows = emptyPrizeRows();
 		setPreviousStartDate(leaderboardConfig.previous?.startDate ?? "");
 		setPreviousEndDate(leaderboardConfig.previous?.endDate ?? "");
 		current.prizeSplit.forEach((entry) => {
-	if (entry.rank >= 1 && entry.rank <= rows.length) {
-		rows[entry.rank - 1].amount = String(entry.amount ?? 0);
-	}
-});
-
-setPrizeRows(rows);
+			if (entry.rank >= 1 && entry.rank <= 15) {
+				setPrizeRows((prev) => {
+					const next = [...prev];
+					next[entry.rank - 1] = { rank: entry.rank, amount: String(entry.amount ?? 0) };
+					return next;
+				});
+			}
+		});
 	}, [leaderboardConfig]);
 
 	const isAdmin = user?.role === "admin";

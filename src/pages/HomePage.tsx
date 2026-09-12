@@ -99,10 +99,10 @@ const HomePage = () => {
       {/* CARD TEMPLATE */}
       {[
   {
-    title: "Monthly Leaderboard",
+    title: "Bi-Weekly Leaderboard",
     icon: "🏆",
     description: "see rules for details",
-    statsMain: "$3500 ",
+    statsMain: "$3000 ",
     statsSub: "Total Prize Pool",
     extraInfo: [],
     badge: "POPULAR",

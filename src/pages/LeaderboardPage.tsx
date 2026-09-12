@@ -12,17 +12,16 @@ function toDateOnlyUtc(d: Date) {
 
 function getCurrentRange() {
     const now = new Date();
-    const year = now.getUTCFullYear();
-    const month = now.getUTCMonth();
-
-    const start = new Date(Date.UTC(year, month, 11, 0, 0, 0, 0));
-
-    const endExclusive = new Date(start);
-    endExclusive.setUTCMonth(endExclusive.getUTCMonth() + 1);
-
+    const nowMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+    const cycleStart = new Date(Date.UTC(2026, 8, 8)); // 09/08/2026
+    const cycleLength = 15 * 86400000;
+    const diff = nowMs - cycleStart.getTime();
+    const cycleNum = Math.floor(diff / cycleLength);
+    const start = new Date(cycleStart.getTime() + cycleNum * cycleLength);
+    const end = new Date(start.getTime() + (15 - 1) * 86400000);
     return {
         startDate: toDateOnlyUtc(start),
-        endDate: toDateOnlyUtc(endExclusive),
+        endDate: toDateOnlyUtc(end),
     };
 }
 
@@ -39,19 +38,20 @@ const LeaderboardPage: React.FC = () => {
     useEffect(() => {
         const updateTimer = () => {
             const now = new Date();
-            const year = now.getUTCFullYear();
-            const month = now.getUTCMonth();
-            // Countdown to the 10th of the next month at noon UTC (the actual leaderboard reset time)
-            let targetMonth = month + 1;
-            let targetYear = year;
-            if (targetMonth > 11) { targetMonth = 0; targetYear++; }
-            const endOfMonth = new Date(Date.UTC(targetYear, targetMonth, 10, 12, 0, 0, 0));
-            const diff = endOfMonth.getTime() - now.getTime();
+            const nowMs = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+            const cycleStart = new Date(Date.UTC(2026, 8, 8));
+            const cycleLength = 15 * 86400000;
+            const diff = nowMs - cycleStart.getTime();
+            const cycleNum = Math.floor(diff / cycleLength);
+            const start = new Date(cycleStart.getTime() + cycleNum * cycleLength);
+            const end = new Date(start.getTime() + (15 - 1) * 86400000);
+            const resetTime = new Date(end.getTime() + 24 * 60 * 60 * 1000); // midnight after cycle ends
+            const remaining = resetTime.getTime() - now.getTime();
 
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-            const minutes = Math.floor((diff / (1000 * 60)) % 60);
-            const seconds = Math.floor((diff / 1000) % 60);
+            const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((remaining / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((remaining / (1000 * 60)) % 60);
+            const seconds = Math.floor((remaining / 1000) % 60);
 
             setTimeLeft(
                 `${days}d ${hours.toString().padStart(2, "0")}h ${minutes
@@ -78,7 +78,7 @@ const LeaderboardPage: React.FC = () => {
 
     const iconMap = [Crown, Trophy, Medal];
     const colorMap = ["text-yellow-400", "text-gray-300", "text-orange-400"];
-    const prizeMap = ["100$", "50$", "25$"];
+    const prizeMap = ["$600", "$450", "$350"];
 
     return (
         <div className='relative min-h-screen text-[#fffefe] p-6 md:p-10 flex flex-col items-center overflow-hidden'>
@@ -274,10 +274,10 @@ const LeaderboardPage: React.FC = () => {
                                     <CardContent className='space-y-4'>
                                         <div className='space-y-2'>
                                             <div className='text-sm text-[#fffefe]/70 pt-2 border-t border-[#efae0e]/20'>
-                                                Weighted Wagered
+                                                Total Wagered
                                             </div>
                                             <div className='text-xl font-semibold text-[#efae0e]'>
-                                                {Number(player.weightedWagered.toFixed(2)).toLocaleString()}$
+                                                {Number(player.wagered.toFixed(2)).toLocaleString()}$
 
                                             </div>
                                         </div>

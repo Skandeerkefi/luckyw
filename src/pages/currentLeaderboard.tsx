@@ -83,7 +83,7 @@ export const CurrentLeaderboard = () => {
 							<div className="mb-2 text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-[#F1A82F] to-[#FFD700]">
 								{maskUsername(player.username)}
 							</div>
-							<div className="mb-4 text-white/80">{formatMoney(Number(player.weightedWagered))} Wagered</div>
+							<div className="mb-4 text-white/80">{formatMoney(Number(player.wagered))} Wagered</div>
 							<div className="rounded-full bg-gradient-to-r from-[#F1A82F] to-[#FFD700] px-4 py-2 text-lg font-bold text-black shadow-[0_0_15px_rgba(241,168,47,0.7)]">
 								Prize: ${formatMoney(prizeByRank[rank] ?? 0)}
 							</div>

@@ -111,7 +111,7 @@ const PreviousRoobetPage: React.FC = () => {
 											<tr key={player.uid} className="border-t border-[#F9B97C]/20 transition hover:bg-[#F9B97C]/10">
 												<td className="p-4 text-center">#{rank}</td>
 												<td className="truncate p-4 font-semibold text-center">{maskUsername(player.username)}</td>
-												<td className="p-4 text-right font-mono text-[#F9B97C]">${formatMoney(Number(player.weightedWagered))}</td>
+												<td className="p-4 text-right font-mono text-[#F9B97C]">${formatMoney(Number(player.wagered))}</td>
 												<td className="p-4 text-right font-bold text-[#F1A82F]">${formatMoney(prizeByRank[rank] ?? 0)}</td>
 											</tr>
 										);
@@ -130,13 +130,13 @@ const PreviousRoobetPage: React.FC = () => {
 				<DialogContent className="max-w-lg border border-[#F1A82F]/30 bg-[#0F0F0F] text-[#FFFBED]">
 					<DialogHeader>
 						<DialogTitle className="text-center text-2xl font-bold text-[#F1A82F]">How the Leaderboard Works</DialogTitle>
-						<DialogDescription className="text-center text-[#F1A82F]/80">Weighted wagers based on RTP determine ranking.</DialogDescription>
+						<DialogDescription className="text-center text-[#F1A82F]/80">Your raw wagers on Roobet count toward the leaderboard with RTP-based weighting.</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-3 text-sm">
-						<p>RTP &lt;= 97% -&gt; <strong>100%</strong> weight</p>
-						<p>RTP 97.01%–98.99% -&gt; <strong>50%</strong> weight</p>
-						<p>RTP &gt;= 99% -&gt; <strong>10%</strong> weight</p>
-						<p className="border-t border-[#F1A82F]/30 pt-3">All games including Dice now count towards the leaderboard.</p>
+						<p>RTP ≤ 97% → <strong>100%</strong> of wager counts</p>
+						<p>RTP 97.01%–98.99% → <strong>50%</strong> of wager counts</p>
+						<p>RTP ≥ 99% → <strong>10%</strong> of wager counts</p>
+						<p className="border-t border-[#F1A82F]/30 pt-3">This is a <strong>Bi-Weekly Leaderboard</strong> with fresh rankings every 15 days.</p>
 					</div>
 				</DialogContent>
 			</Dialog>
